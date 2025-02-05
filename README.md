@@ -65,6 +65,7 @@ jobs:
 
 Instead of passing a GitHub Access Token, you can pass GitHub App ID and GitHub App Private Key.
 Then this action issues a GitHub App installation token by minimum `repositories` and `permissions`.
+This makes code simple.
 
 ```yaml
 name: Example
