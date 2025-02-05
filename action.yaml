@@ -97,7 +97,7 @@ runs:
         if [ -z "$FILES" ]; then
           FILES=$(git ls-files --modified --others --exclude-standard)
           if [ -z "$FILES" ]; then
-            echo "No changes" >&2
+            echo "[INFO] No changes" >&2
             exit 0
           fi
         fi
