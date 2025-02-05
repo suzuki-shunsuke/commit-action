@@ -7,7 +7,7 @@ GitHub Action to push changes to remote branches by GitHub API.
 ## Why?
 
 This action creates commits using GitHub API rather than `git`.
-This enables you to create verified commits using GitHub App.
+This enables you to create **verified** commits using GitHub App.
 This action wraps [suzuki-shunsuke/ghcp](https://github.com/suzuki-shunsuke/ghcp) to commit changed files easily.
 
 ## Requirements
