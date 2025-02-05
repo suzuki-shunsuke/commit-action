@@ -62,3 +62,29 @@ jobs:
         with:
           github_token: ${{steps.token.outputs.token}}
 ```
+
+Instead of passing a GitHub Access Token, you can pass GitHub App ID and GitHub App Private Key.
+Then this action issues a GitHub App installation token by minimum `repositories` and `permissions`.
+
+```yaml
+name: Example
+on:
+  pull_request: {}
+jobs:
+  example:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          persist-credentials: false
+
+      # Change files
+      # ...
+
+      - name: Push changes to the remote branch ($GITHUB_HEAD_REF or $GITHUB_REF)
+        uses: suzuki-shunsuke/commit-action@main
+        with:
+          app_id: ${{secrets.APP_ID}}
+          app_private_key: ${{secrets.APP_PRIVATE_KEY}}
+```
