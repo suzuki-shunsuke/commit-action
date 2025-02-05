@@ -6,7 +6,6 @@ inputs:
       GitHub Access Token
       contents:write - Push commits
     required: false
-    default: ${{ github.token }}
   commit_message:
     description: |
       Commit message
@@ -22,6 +21,14 @@ inputs:
       A Pushed repository.
       By default, GITHUB_REPOSITORY is used.
     required: false
+  app_id:
+    description: |
+      GitHub App ID
+    required: false
+  app_private_key:
+    description: |
+      GitHub App Private Key
+    required: false
 runs:
   using: composite
   steps:
@@ -35,16 +42,42 @@ runs:
         skip_install_aqua: "true"
       env:
         AQUA_CONFIG: ${{ steps.aqua_config.outputs.value }}
+
+    - shell: bash
+      id: repo_name
+      run: |
+        repo=${REPOSITORY:-$GITHUB_REPOSITORY}
+        echo "value=${repo#*/}" >> "$GITHUB_OUTPUT"
+      env:
+        REPOSITORY: ${{ inputs.repository }}
+
+    - uses: suzuki-shunsuke/github-token-action@350d7506222e3a0016491abe85b5c4dd475b67d1 # v0.2.1
+      id: token
+      with:
+        github_token: ${{inputs.github_token}}
+        github_app_id: ${{inputs.app_id}}
+        github_app_private_key: ${{inputs.app_private_key}}
+        default_github_token: ${{github.token}}
+        github_app_permissions: >-
+          {
+            "contents": "write"
+          }
+        github_app_repositories: >-
+          [
+            "${{steps.repo_name.outputs.value}}"
+          ]
+
     - shell: bash
       run: ghcp -v
       env:
         AQUA_CONFIG: ${{ steps.aqua_config.outputs.value }}
+        GITHUB_TOKEN: ${{ steps.token.outputs.token }}
 
     # List changed files
     # Commit changes
     - shell: bash
       env:
-        GITHUB_TOKEN: ${{ inputs.github_token }}
+        GITHUB_TOKEN: ${{ steps.token.outputs.token }}
         AQUA_CONFIG: ${{ steps.aqua_config.outputs.value }}
         MESSAGE: ${{ inputs.commit_message }}
         BRANCH_NAME: ${{ inputs.branch }}
