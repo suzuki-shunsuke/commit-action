@@ -33,6 +33,13 @@ inputs:
     description: |
       GitHub App Private Key
     required: false
+  files:
+    description: |
+      Files to commit. Unchanged files are ignored.
+      To specify multiple files, separate them with a newline.
+      By default, all modified and untracked files are committed.
+      git ls-files --modified --others --exclude-standard
+    required: false
 runs:
   using: composite
   steps:
@@ -86,13 +93,20 @@ runs:
         MESSAGE: ${{ inputs.commit_message }}
         BRANCH_NAME: ${{ inputs.branch }}
         REPOSITORY: ${{ inputs.repository }}
+        FILES: ${{ inputs.files }}
       run: |
-        files=$(git ls-files --modified --others --exclude-standard)
-        if [ -z "$files" ]; then
-          echo "No changes" >&2
-          exit 0
+        if [ -z "$FILES" ]; then
+          FILES=$(git ls-files --modified --others --exclude-standard)
+          if [ -z "$FILES" ]; then
+            echo "[INFO] No changes" >&2
+            exit 0
+          fi
         fi
         branch=${BRANCH_NAME:-${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}}
         repo=${REPOSITORY:-$GITHUB_REPOSITORY}
-        echo "$files" | xargs ghcp commit -r "$repo" -D -m "$MESSAGE" -b "$branch"
+        tempfile=$(mktemp)
+        echo "$FILES" | xargs ghcp commit -r "$repo" -D -m "$MESSAGE" -b "$branch" 2> >(tee -a "$tempfile" >&2)
+        if grep -q "Nothing to commit" "$tempfile"; then
+          exit 0
+        fi
         exit 1
