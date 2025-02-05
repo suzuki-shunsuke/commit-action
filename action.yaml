@@ -22,11 +22,14 @@ runs:
         AQUA_CONFIG: ${{ steps.aqua_config.outputs.value }}
     - shell: bash
       run: ghcp -v
+      env:
+        AQUA_CONFIG: ${{ steps.aqua_config.outputs.value }}
     # List changed files
     # Commit changes
     - shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
+        AQUA_CONFIG: ${{ steps.aqua_config.outputs.value }}
       run: |
         files=$(git status --short | awk '{print $2}')
         if [ -z "$files" ]; then
