@@ -10,6 +10,11 @@ This action creates commits using GitHub API rather than `git`.
 This enables you to create verified commits using GitHub App.
 This action wraps [suzuki-shunsuke/ghcp](https://github.com/suzuki-shunsuke/ghcp) to commit changed files easily.
 
+## Requirements
+
+- `git`: To list changed files
+- GitHub Access Token: To push commits. The permission `contents:write` is required
+
 ## How To Use
 
 This action uses a GitHub token to push a commit.

@@ -12,6 +12,16 @@ inputs:
       Commit message
     required: false
     default: "commit changes"
+  branch:
+    description: |
+      A Pushed branch.
+      By default, GITHUB_HEAD_REF or GITHUB_REF_NAME is used.
+    required: false
+  repository:
+    description: |
+      A Pushed repository.
+      By default, GITHUB_REPOSITORY is used.
+    required: false
 runs:
   using: composite
   steps:
@@ -29,6 +39,7 @@ runs:
       run: ghcp -v
       env:
         AQUA_CONFIG: ${{ steps.aqua_config.outputs.value }}
+
     # List changed files
     # Commit changes
     - shell: bash
@@ -36,12 +47,15 @@ runs:
         GITHUB_TOKEN: ${{ inputs.github_token }}
         AQUA_CONFIG: ${{ steps.aqua_config.outputs.value }}
         MESSAGE: ${{ inputs.commit_message }}
+        BRANCH_NAME: ${{ inputs.branch }}
+        REPOSITORY: ${{ inputs.repository }}
       run: |
-        files=$(git status --short | awk '{print $2}')
+        files=$(git ls-files --modified --others --exclude-standard)
         if [ -z "$files" ]; then
           echo "No changes" >&2
           exit 0
         fi
-        branch=${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}
-        echo "$files" | xargs ghcp commit -r "$GITHUB_REPOSITORY" -D -m "$MESSAGE" -b "$branch"
+        branch=${BRANCH_NAME:-${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}}
+        repo=${REPOSITORY:-$GITHUB_REPOSITORY}
+        echo "$files" | xargs ghcp commit -r "$repo" -D -m "$MESSAGE" -b "$branch"
         exit 1
