@@ -36,6 +36,7 @@ inputs:
   files:
     description: |
       Files to commit. Unchanged files are ignored.
+      To specify multiple files, separate them with a newline.
       By default, all modified and untracked files are committed.
       git ls-files --modified --others --exclude-standard
     required: false
