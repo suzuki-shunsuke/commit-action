@@ -103,5 +103,9 @@ runs:
         fi
         branch=${BRANCH_NAME:-${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}}
         repo=${REPOSITORY:-$GITHUB_REPOSITORY}
-        echo "$FILES" | xargs ghcp commit -r "$repo" -D -m "$MESSAGE" -b "$branch"
+        tempfile=$(mktemp)
+        echo "$FILES" | xargs ghcp commit -r "$repo" -D -m "$MESSAGE" -b "$branch" 2> >(tee -a "$tempfile" >&2)
+        if grep -q "Nothing to commit" "$tempfile"; then
+          exit 0
+        fi
         exit 1

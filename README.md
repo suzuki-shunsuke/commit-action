@@ -94,3 +94,6 @@ jobs:
           app_id: ${{secrets.APP_ID}}
           app_private_key: ${{secrets.APP_PRIVATE_KEY}}
 ```
+
+This action succeeds if no file is changed.
+It fails if a commit is pushed.
