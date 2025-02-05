@@ -1,0 +1,47 @@
+name: Commit
+description: Commit changes by GitHub API
+inputs:
+  github_token:
+    description: |
+      GitHub Access Token
+      contents:write - Push commits
+    required: false
+    default: ${{ github.token }}
+  commit_message:
+    description: |
+      Commit message
+    required: false
+    default: "commit changes"
+runs:
+  using: composite
+  steps:
+    # Install suzuki-shunsuke/ghcp by aqua
+    - run: echo "value=$GITHUB_ACTION_PATH/aqua/aqua.yaml" >> "$GITHUB_OUTPUT"
+      id: aqua_config
+      shell: bash
+    - uses: aquaproj/aqua-installer@e2d0136abcf70b7a2f6f505720640750557c4b33 # v3.1.1
+      with:
+        aqua_version: v2.43.2
+        skip_install_aqua: "true"
+      env:
+        AQUA_CONFIG: ${{ steps.aqua_config.outputs.value }}
+    - shell: bash
+      run: ghcp -v
+      env:
+        AQUA_CONFIG: ${{ steps.aqua_config.outputs.value }}
+    # List changed files
+    # Commit changes
+    - shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+        AQUA_CONFIG: ${{ steps.aqua_config.outputs.value }}
+        MESSAGE: ${{ inputs.commit_message }}
+      run: |
+        files=$(git status --short | awk '{print $2}')
+        if [ -z "$files" ]; then
+          echo "No changes" >&2
+          exit 0
+        fi
+        branch=${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}
+        echo "$files" | xargs ghcp commit -r "$GITHUB_REPOSITORY" -D -m "$MESSAGE" -b "$branch"
+        exit 1
