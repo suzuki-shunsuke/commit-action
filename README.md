@@ -31,6 +31,8 @@ https://docs.github.com/en/actions/security-for-github-actions/security-guides/a
 
 ## How To Use
 
+About inputs, please see [action.yaml](action.yaml).
+
 ```yaml
 name: Example
 on:
@@ -60,7 +62,7 @@ jobs:
             }
           repositories: >-
             ["${{github.event.repository.name}}"]
-      - name: Push changes to the remote branch ($GITHUB_HEAD_REF or $GITHUB_REF)
+      - name: Push changes to the remote branch
         uses: suzuki-shunsuke/commit-action@main
         with:
           github_token: ${{steps.token.outputs.token}}
@@ -86,7 +88,7 @@ jobs:
       # Change files
       # ...
 
-      - name: Push changes to the remote branch ($GITHUB_HEAD_REF or $GITHUB_REF)
+      - name: Push changes to the remote branch
         uses: suzuki-shunsuke/commit-action@main
         with:
           app_id: ${{secrets.APP_ID}}

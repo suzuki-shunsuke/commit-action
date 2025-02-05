@@ -33,6 +33,12 @@ inputs:
     description: |
       GitHub App Private Key
     required: false
+  files:
+    description: |
+      Files to commit.
+      By default, all modified and untracked files are committed.
+      git ls-files --modified --others --exclude-standard
+    required: false
 runs:
   using: composite
   steps:
@@ -86,13 +92,16 @@ runs:
         MESSAGE: ${{ inputs.commit_message }}
         BRANCH_NAME: ${{ inputs.branch }}
         REPOSITORY: ${{ inputs.repository }}
+        FILES: ${{ inputs.files }}
       run: |
-        files=$(git ls-files --modified --others --exclude-standard)
-        if [ -z "$files" ]; then
-          echo "No changes" >&2
-          exit 0
+        if [ -z "$FILES" ]; then
+          FILES=$(git ls-files --modified --others --exclude-standard)
+          if [ -z "$FILES" ]; then
+            echo "No changes" >&2
+            exit 0
+          fi
         fi
         branch=${BRANCH_NAME:-${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}}
         repo=${REPOSITORY:-$GITHUB_REPOSITORY}
-        echo "$files" | xargs ghcp commit -r "$repo" -D -m "$MESSAGE" -b "$branch"
+        echo "$FILES" | xargs ghcp commit -r "$repo" -D -m "$MESSAGE" -b "$branch"
         exit 1
