@@ -36,4 +36,4 @@ runs:
           echo "No changes" >&2
           exit 0
         fi
-        echo "$files" | xargs ghcp commit -D
+        echo "$files" | xargs ghcp commit -r "$GITHUB_REPOSITORY" -D
