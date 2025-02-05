@@ -11,10 +11,10 @@ runs:
   using: composite
   steps:
     # Install suzuki-shunsuke/ghcp by aqua
-    - run: echo "value=$GITHUB_ACTION_PATH/aqua.yaml" >> "$GITHUB_OUTPUT"
+    - run: echo "value=$GITHUB_ACTION_PATH/aqua/aqua.yaml" >> "$GITHUB_OUTPUT"
       id: aqua_config
       shell: bash
-    - uses: aquaproj/aqua-installer@v3.1.1
+    - uses: aquaproj/aqua-installer@e2d0136abcf70b7a2f6f505720640750557c4b33 # v3.1.1
       with:
         aqua_version: v2.43.2
         skip_install_aqua: "true"
