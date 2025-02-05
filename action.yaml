@@ -1,0 +1,36 @@
+name: Commit
+description: Commit changes by GitHub API
+inputs:
+  github_token:
+    description: |
+      GitHub Access Token
+      contents:write - Push commits
+    required: false
+    default: ${{ github.token }}
+runs:
+  using: composite
+  steps:
+    # Install suzuki-shunsuke/ghcp by aqua
+    - run: echo "value=$GITHUB_ACTION_PATH/aqua.yaml" >> "$GITHUB_OUTPUT"
+      id: aqua_config
+      shell: bash
+    - uses: aquaproj/aqua-installer@v3.1.1
+      with:
+        aqua_version: v2.43.2
+        skip_install_aqua: "true"
+      env:
+        AQUA_CONFIG: ${{ steps.aqua_config.outputs.value }}
+    - shell: bash
+      run: ghcp -v
+    # List changed files
+    # Commit changes
+    - shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+      run: |
+        files=$(git status --short | awk '{print $2}')
+        if [ -z "$files" ]; then
+          echo "No changes" >&2
+          exit 0
+        fi
+        echo "$files" | xargs ghcp commit -D
