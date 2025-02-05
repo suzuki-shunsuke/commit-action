@@ -42,5 +42,6 @@ runs:
           echo "No changes" >&2
           exit 0
         fi
-        echo "$files" | xargs ghcp commit -r "$GITHUB_REPOSITORY" -D -m "$MESSAGE"
+        branch=${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}
+        echo "$files" | xargs ghcp commit -r "$GITHUB_REPOSITORY" -D -m "$MESSAGE" -b "$branch"
         exit 1
