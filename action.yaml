@@ -7,6 +7,11 @@ inputs:
       contents:write - Push commits
     required: false
     default: ${{ github.token }}
+  commit_message:
+    description: |
+      Commit message
+    required: false
+    default: "commit changes"
 runs:
   using: composite
   steps:
@@ -30,10 +35,12 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
         AQUA_CONFIG: ${{ steps.aqua_config.outputs.value }}
+        MESSAGE: ${{ inputs.commit_message }}
       run: |
         files=$(git status --short | awk '{print $2}')
         if [ -z "$files" ]; then
           echo "No changes" >&2
           exit 0
         fi
-        echo "$files" | xargs ghcp commit -r "$GITHUB_REPOSITORY" -D
+        echo "$files" | xargs ghcp commit -r "$GITHUB_REPOSITORY" -D -m "$MESSAGE"
+        exit 1
