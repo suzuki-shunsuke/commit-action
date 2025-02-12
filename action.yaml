@@ -49,7 +49,7 @@ runs:
       shell: bash
     - uses: aquaproj/aqua-installer@e2d0136abcf70b7a2f6f505720640750557c4b33 # v3.1.1
       with:
-        aqua_version: v2.43.2
+        aqua_version: v2.43.3
         skip_install_aqua: "true"
       env:
         AQUA_CONFIG: ${{ steps.aqua_config.outputs.value }}
