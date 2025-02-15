@@ -1,6 +1,6 @@
 # commit-action
 
-[![License](http://img.shields.io/badge/license-mit-blue.svg?style=flat-square)](https://raw.githubusercontent.com/suzuki-shunsuke/urfave-cli-help-all/main/LICENSE) | [action.yaml](action.yaml)
+[![License](http://img.shields.io/badge/license-mit-blue.svg?style=flat-square)](https://raw.githubusercontent.com/suzuki-shunsuke/commit-action/main/LICENSE) | [action.yaml](action.yaml)
 
 GitHub Action to push changes to remote branches by GitHub API.
 You can create **verified** commits using GitHub App.
