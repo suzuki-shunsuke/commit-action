@@ -44,9 +44,9 @@ inputs:
     description: |
       How to handle changed workflow files.
       This input is used if `app_id` and `app_private_key` are specified.
-      To commit workflow files, the permission `actions:write` is required.
+      To commit workflow files, the permission `workflows:write` is required.
       The following values are available:
-      1. allow - Grant `actions:write` permission when creating an access token
+      1. allow - Grant `workflows:write` permission when creating an access token
       2. deny - Fail if workflow files are changed
       3. ignore - Ignore workflow files
     required: false
@@ -94,8 +94,8 @@ runs:
         fi
         if [ "$WORKFLOW" = allow ]; then
           if echo "$FILES" | grep -qE '^\.github/workflows/'; then
-            echo "::notice:: Grant actions:write permission" >&2
-            echo 'permissions={"contents": "write", "actions": "write"}' >> "$GITHUB_OUTPUT"
+            echo "::notice:: Grant workflows:write permission" >&2
+            echo 'permissions={"contents": "write", "workflows": "write"}' >> "$GITHUB_OUTPUT"
           fi
         fi
         {
