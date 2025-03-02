@@ -89,10 +89,12 @@ runs:
           fi
         fi
         if [ "$WORKFLOW" = ignore ]; then
+          echo "::notice:: Ignore workflow files" >&2
           FILES=$(echo "$FILES" | grep -vE '^\.github/workflows/')
         fi
         if [ "$WORKFLOW" = allow ]; then
           if echo "$FILES" | grep -qE '^\.github/workflows/'; then
+            echo "::notice:: Grant actions:write permission" >&2
             echo 'permissions={"contents": "write", "actions": "write"}' >> "$GITHUB_OUTPUT"
           fi
         fi
