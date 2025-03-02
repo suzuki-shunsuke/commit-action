@@ -65,14 +65,6 @@ runs:
       env:
         AQUA_CONFIG: ${{ steps.aqua_config.outputs.value }}
 
-    - shell: bash
-      id: repo_name
-      run: |
-        repo=${REPOSITORY:-$GITHUB_REPOSITORY}
-        echo "value=${repo#*/}" >> "$GITHUB_OUTPUT"
-      env:
-        REPOSITORY: ${{ inputs.repository }}
-
     # List changed files
     - shell: bash
       id: files
@@ -104,7 +96,17 @@ runs:
           echo EOF
         } >> "$GITHUB_OUTPUT"
 
+    - shell: bash
+      id: repo_name
+      if: steps.files.outputs.files != ''
+      run: |
+        repo=${REPOSITORY:-$GITHUB_REPOSITORY}
+        echo "value=${repo#*/}" >> "$GITHUB_OUTPUT"
+      env:
+        REPOSITORY: ${{ inputs.repository }}
+
     - uses: suzuki-shunsuke/github-token-action@350d7506222e3a0016491abe85b5c4dd475b67d1 # v0.2.1
+      if: steps.files.outputs.files != ''
       id: token
       with:
         github_token: ${{inputs.github_token}}
@@ -118,12 +120,12 @@ runs:
           ]
 
     - shell: bash
+      if: steps.files.outputs.files != ''
       run: ghcp -v
       env:
         AQUA_CONFIG: ${{ steps.aqua_config.outputs.value }}
         GITHUB_TOKEN: ${{ steps.token.outputs.token }}
 
-    # List changed files
     # Commit changes
     - shell: bash
       if: steps.files.outputs.files != ''
