@@ -100,7 +100,7 @@ runs:
         fi
         {
           echo 'files<<EOF'
-          cat "$FILES"
+          echo "$FILES"
           echo EOF
         } >> "$GITHUB_OUTPUT"
 
