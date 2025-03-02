@@ -40,6 +40,17 @@ inputs:
       By default, all modified and untracked files are committed.
       git ls-files --modified --others --exclude-standard
     required: false
+  workflow:
+    description: |
+      How to handle changed workflow files.
+      This input is used if `app_id` and `app_private_key` are specified.
+      To commit workflow files, the permission `workflows:write` is required.
+      The following values are available:
+      1. allow - Grant `workflows:write` permission when creating an access token
+      2. deny - Fail if workflow files are changed
+      3. ignore - Ignore workflow files
+    required: false
+    default: allow
 runs:
   using: composite
   steps:
@@ -54,8 +65,40 @@ runs:
       env:
         AQUA_CONFIG: ${{ steps.aqua_config.outputs.value }}
 
+    # List changed files
+    - shell: bash
+      id: files
+      env:
+        FILES: ${{ inputs.files }}
+        WORKFLOW: ${{ inputs.workflow }}
+      run: |
+        echo 'permissions={"contents": "write"}' >> "$GITHUB_OUTPUT"
+        if [ -z "$FILES" ]; then
+          FILES=$(git ls-files --modified --others --exclude-standard)
+          if [ -z "$FILES" ]; then
+            echo "::notice:: No changes" >&2
+            exit 0
+          fi
+        fi
+        if [ "$WORKFLOW" = ignore ]; then
+          echo "::notice:: Ignore workflow files" >&2
+          FILES=$(echo "$FILES" | grep -vE '^\.github/workflows/')
+        fi
+        if [ "$WORKFLOW" = allow ]; then
+          if echo "$FILES" | grep -qE '^\.github/workflows/'; then
+            echo "::notice:: Grant workflows:write permission" >&2
+            echo 'permissions={"contents": "write", "workflows": "write"}' >> "$GITHUB_OUTPUT"
+          fi
+        fi
+        {
+          echo 'files<<EOF'
+          echo "$FILES"
+          echo EOF
+        } >> "$GITHUB_OUTPUT"
+
     - shell: bash
       id: repo_name
+      if: steps.files.outputs.files != ''
       run: |
         repo=${REPOSITORY:-$GITHUB_REPOSITORY}
         echo "value=${repo#*/}" >> "$GITHUB_OUTPUT"
@@ -63,45 +106,37 @@ runs:
         REPOSITORY: ${{ inputs.repository }}
 
     - uses: suzuki-shunsuke/github-token-action@350d7506222e3a0016491abe85b5c4dd475b67d1 # v0.2.1
+      if: steps.files.outputs.files != ''
       id: token
       with:
         github_token: ${{inputs.github_token}}
         github_app_id: ${{inputs.app_id}}
         github_app_private_key: ${{inputs.app_private_key}}
         default_github_token: ${{github.token}}
-        github_app_permissions: >-
-          {
-            "contents": "write"
-          }
+        github_app_permissions: ${{steps.files.outputs.permissions}}
         github_app_repositories: >-
           [
             "${{steps.repo_name.outputs.value}}"
           ]
 
     - shell: bash
+      if: steps.files.outputs.files != ''
       run: ghcp -v
       env:
         AQUA_CONFIG: ${{ steps.aqua_config.outputs.value }}
         GITHUB_TOKEN: ${{ steps.token.outputs.token }}
 
-    # List changed files
     # Commit changes
     - shell: bash
+      if: steps.files.outputs.files != ''
       env:
         GITHUB_TOKEN: ${{ steps.token.outputs.token }}
         AQUA_CONFIG: ${{ steps.aqua_config.outputs.value }}
         MESSAGE: ${{ inputs.commit_message }}
         BRANCH_NAME: ${{ inputs.branch }}
         REPOSITORY: ${{ inputs.repository }}
-        FILES: ${{ inputs.files }}
+        FILES: ${{ steps.files.outputs.files }}
       run: |
-        if [ -z "$FILES" ]; then
-          FILES=$(git ls-files --modified --others --exclude-standard)
-          if [ -z "$FILES" ]; then
-            echo "[INFO] No changes" >&2
-            exit 0
-          fi
-        fi
         branch=${BRANCH_NAME:-${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}}
         repo=${REPOSITORY:-$GITHUB_REPOSITORY}
         tempfile=$(mktemp)
