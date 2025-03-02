@@ -126,7 +126,7 @@ runs:
     # List changed files
     # Commit changes
     - shell: bash
-      if: steps.files.outputs.value != ''
+      if: steps.files.outputs.files != ''
       env:
         GITHUB_TOKEN: ${{ steps.token.outputs.token }}
         AQUA_CONFIG: ${{ steps.aqua_config.outputs.value }}
