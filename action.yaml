@@ -133,7 +133,7 @@ runs:
         MESSAGE: ${{ inputs.commit_message }}
         BRANCH_NAME: ${{ inputs.branch }}
         REPOSITORY: ${{ inputs.repository }}
-        FILES: ${{ steps.files.output.files }}
+        FILES: ${{ steps.files.outputs.files }}
       run: |
         branch=${BRANCH_NAME:-${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}}
         repo=${REPOSITORY:-$GITHUB_REPOSITORY}
