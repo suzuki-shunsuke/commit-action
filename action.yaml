@@ -137,11 +137,15 @@ runs:
         REPOSITORY: ${{ inputs.repository }}
         FILES: ${{ steps.files.outputs.files }}
       run: |
-        branch=${BRANCH_NAME:-${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}}
+        default_branch=${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}
+        branch=${BRANCH_NAME:-${default_branch}}
         repo=${REPOSITORY:-$GITHUB_REPOSITORY}
         tempfile=$(mktemp)
         echo "$FILES" | xargs ghcp commit -r "$repo" -D -m "$MESSAGE" -b "$branch" 2> >(tee -a "$tempfile" >&2)
         if grep -q "Nothing to commit" "$tempfile"; then
+          exit 0
+        fi
+        if [ "$repo" != "$GITHUB_REPOSITORY" ] || [ "$branch" != "$default_branch"  ]; then
           exit 0
         fi
         exit 1

@@ -69,7 +69,7 @@ jobs:
         uses: suzuki-shunsuke/commit-action@db754eb4adb44fb5aee5879a3bd08785efec198e # v0.0.4
 ```
 
-commit-action fails if it pushes a commit.
+commit-action fails if it pushes a commit to `${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}` in `$GITHUB_REPOSITORY`.
 If no change is pushed, commit-action does nothing and exits successfully.
 
 ### branch, repository
