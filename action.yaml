@@ -87,7 +87,11 @@ runs:
         if [ "$WORKFLOW" = allow ]; then
           if echo "$FILES" | grep -qE '^\.github/workflows/'; then
             echo "::notice:: Grant workflows:write permission" >&2
-            echo 'permissions={"contents": "write", "workflows": "write"}' >> "$GITHUB_OUTPUT"
+            if echo "$FILES" | grep -vqE '^\.github/workflows/'; then
+              echo 'permissions={"contents": "write", "workflows": "write"}' >> "$GITHUB_OUTPUT"
+            else
+              echo 'permissions={"workflows": "write"}' >> "$GITHUB_OUTPUT"
+            fi
           fi
         fi
         {
