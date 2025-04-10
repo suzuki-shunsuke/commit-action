@@ -66,7 +66,7 @@ jobs:
       # ...
 
       - name: Push changes to the remote branch
-        uses: suzuki-shunsuke/commit-action@db754eb4adb44fb5aee5879a3bd08785efec198e # v0.0.4
+        uses: suzuki-shunsuke/commit-action@cc96d3a3fd959d05e9b79ca395eb30b835aeba24 # v0.0.7
 ```
 
 commit-action fails if it pushes a commit to `${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}` in `$GITHUB_REPOSITORY`.
@@ -76,10 +76,24 @@ If no change is pushed, commit-action does nothing and exits successfully.
 
 By default, commit-action pushes a commit to `${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}` in `$GITHUB_REPOSITORY`, but you can change them.
 
+```yaml
+- uses: suzuki-shunsuke/commit-action@cc96d3a3fd959d05e9b79ca395eb30b835aeba24 # v0.0.7
+  with:
+    branch: foo
+    repository: suzuki-shunsuke/tfcmt
+```
+
 ### parent branch
 
 If a new branch is created, the parent branch is the default branch by default.
 You can specify the paretn branch.
+
+```yaml
+- uses: suzuki-shunsuke/commit-action@cc96d3a3fd959d05e9b79ca395eb30b835aeba24 # v0.0.7
+  with:
+    branch: foo-2
+    parent_branch: foo
+```
 
 ### GitHub Access token
 
@@ -89,7 +103,7 @@ You can create a GitHub App installation access token and pass it to commit-acti
 Then commit-action creates a GitHub App installation access token with minimum `repositories` and `permissions`.
 
 ```yaml
-- uses: suzuki-shunsuke/commit-action@db754eb4adb44fb5aee5879a3bd08785efec198e # v0.0.4
+- uses: suzuki-shunsuke/commit-action@cc96d3a3fd959d05e9b79ca395eb30b835aeba24 # v0.0.7
   with:
     app_id: ${{secrets.APP_ID}}
     app_private_key: ${{secrets.APP_PRIVATE_KEY}}
@@ -101,7 +115,7 @@ commit-action commits all created, updated, and deleted files by default, but yo
 And you can also change the commit message.
 
 ```yaml
-- uses: suzuki-shunsuke/commit-action@db754eb4adb44fb5aee5879a3bd08785efec198e # v0.0.4
+- uses: suzuki-shunsuke/commit-action@cc96d3a3fd959d05e9b79ca395eb30b835aeba24 # v0.0.7
   with:
     commit_message: "style: format code"
     files: |
@@ -119,3 +133,9 @@ The following values are available:
 1. `allow` (default) - Grant workflows:write permission when issuing an access token
 1. `deny` - Fail if workflow files are changed
 1. `ignore` - Ignore workflow files
+
+```yaml
+- uses: suzuki-shunsuke/commit-action@cc96d3a3fd959d05e9b79ca395eb30b835aeba24 # v0.0.7
+  with:
+    workflow: ignore # allow (default), deny
+```
