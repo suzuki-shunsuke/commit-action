@@ -76,6 +76,11 @@ If no change is pushed, commit-action does nothing and exits successfully.
 
 By default, commit-action pushes a commit to `${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}` in `$GITHUB_REPOSITORY`, but you can change them.
 
+### parent branch
+
+If a new branch is created, the parent branch is the default branch by default.
+You can specify the paretn branch.
+
 ### GitHub Access token
 
 `${{github.token}}` is used by default, but we don't recommend it because `${{github.token}}` doesn't trigger a new workflow run.
