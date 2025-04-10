@@ -20,6 +20,11 @@ inputs:
       A Pushed branch.
       By default, GITHUB_HEAD_REF or GITHUB_REF_NAME is used.
     required: false
+  parent_branch:
+    description: |
+      If a branch is newly created, the parent branch is used as the base branch.
+      By default, the default branch is used.
+    required: false
   repository:
     description: |
       A Pushed repository.
@@ -134,6 +139,7 @@ runs:
         AQUA_CONFIG: ${{ steps.aqua_config.outputs.value }}
         MESSAGE: ${{ inputs.commit_message }}
         BRANCH_NAME: ${{ inputs.branch }}
+        PARENT_BRANCH: ${{ inputs.parent_branch }}
         REPOSITORY: ${{ inputs.repository }}
         FILES: ${{ steps.files.outputs.files }}
       run: |
@@ -141,7 +147,11 @@ runs:
         branch=${BRANCH_NAME:-${default_branch}}
         repo=${REPOSITORY:-$GITHUB_REPOSITORY}
         tempfile=$(mktemp)
-        echo "$FILES" | xargs ghcp commit -r "$repo" -D -m "$MESSAGE" -b "$branch" 2> >(tee -a "$tempfile" >&2)
+        if [ -n "$PARENT_BRANCH" ]; then
+          echo "$FILES" | xargs ghcp commit -r "$repo" -D -m "$MESSAGE" -b "$branch" --parent "$PARENT_BRANCH" 2> >(tee -a "$tempfile" >&2)
+        else
+          echo "$FILES" | xargs ghcp commit -r "$repo" -D -m "$MESSAGE" -b "$branch" 2> >(tee -a "$tempfile" >&2)
+        fi
         if grep -q "Nothing to commit" "$tempfile"; then
           exit 0
         fi
