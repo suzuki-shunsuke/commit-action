@@ -62,20 +62,13 @@ outputs:
       Whether the commit was pushed.
       If the commit is not pushed, it means that there are no changes to commit.
     value: ${{ steps.files.outputs.files != '' && steps.commit.outputs.pushed == 'true' }}
+  sha:
+    description: |
+      Full length commit SHA to be pushed.
+    value: ${{steps.commit.outputs.sha}}
 runs:
   using: composite
   steps:
-    # Install suzuki-shunsuke/ghcp by aqua
-    - run: echo "value=$GITHUB_ACTION_PATH/aqua/aqua.yaml" >> "$GITHUB_OUTPUT"
-      id: aqua_config
-      shell: bash
-    - uses: aquaproj/aqua-installer@d1fe50798dbadd4eb5b98957290ca175f6b4870f # v4.0.2
-      with:
-        aqua_version: v2.53.3
-        skip_install_aqua: "true"
-      env:
-        AQUA_CONFIG: ${{ steps.aqua_config.outputs.value }}
-
     # List changed files
     - shell: bash
       id: files
@@ -130,41 +123,12 @@ runs:
             "${{steps.repo_name.outputs.value}}"
           ]
 
-    - shell: bash
-      if: steps.files.outputs.files != ''
-      run: ghcp -v
-      env:
-        AQUA_CONFIG: ${{ steps.aqua_config.outputs.value }}
-        GITHUB_TOKEN: ${{ steps.token.outputs.token }}
-
-    # Commit changes
-    - shell: bash
-      if: steps.files.outputs.files != ''
+    - uses: suzuki-shunsuke/commit-action/js@main
       id: commit
-      env:
-        GITHUB_TOKEN: ${{ steps.token.outputs.token }}
-        AQUA_CONFIG: ${{ steps.aqua_config.outputs.value }}
-        MESSAGE: ${{ inputs.commit_message }}
-        BRANCH_NAME: ${{ inputs.branch }}
-        PARENT_BRANCH: ${{ inputs.parent_branch }}
-        REPOSITORY: ${{ inputs.repository }}
-        FILES: ${{ steps.files.outputs.files }}
-      run: |
-        default_branch=${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}
-        branch=${BRANCH_NAME:-${default_branch}}
-        repo=${REPOSITORY:-$GITHUB_REPOSITORY}
-        tempfile=$(mktemp)
-        if [ -n "$PARENT_BRANCH" ]; then
-          echo "$FILES" | xargs ghcp commit -r "$repo" -D -m "$MESSAGE" -b "$branch" --parent "$PARENT_BRANCH" 2> >(tee -a "$tempfile" >&2)
-        else
-          echo "$FILES" | xargs ghcp commit -r "$repo" -D -m "$MESSAGE" -b "$branch" 2> >(tee -a "$tempfile" >&2)
-        fi
-        if grep -q "Nothing to commit" "$tempfile"; then
-          echo "pushed=false" >> "$GITHUB_OUTPUT"
-          exit 0
-        fi
-        echo "pushed=true" >> "$GITHUB_OUTPUT"
-        if [ "$repo" != "$GITHUB_REPOSITORY" ] || [ "$branch" != "$default_branch"  ]; then
-          exit 0
-        fi
-        exit 1
+      with:
+        github_token: ${{ steps.token.outputs.token }}
+        repo: ${{ inputs.repository }}
+        branch: ${{ inputs.branch }}
+        files: ${{ steps.files.outputs.files }}
+        message: ${{ inputs.commit_message }}
+        parent_branch: ${{ inputs.parent_branch }}
