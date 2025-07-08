@@ -1,0 +1,35 @@
+name: Release JavaScript actions
+description: Release JavaScript actions
+inputs:
+  files:
+    description: |
+      Files to be committed.
+    required: false
+  github_token:
+    description: |
+      GitHub Access Token
+      contents:write - Push commits
+    required: true
+  commit_message:
+    description: |
+      Commit message
+    required: false
+    default: "commit changes"
+  branch:
+    description: |
+      A Pushed branch.
+      By default, GITHUB_HEAD_REF or GITHUB_REF_NAME is used.
+    required: false
+  parent_branch:
+    description: |
+      If a branch is newly created, the parent branch is used as the base branch.
+      By default, the default branch is used.
+    required: false
+  repository:
+    description: |
+      A Pushed repository.
+      By default, GITHUB_REPOSITORY is used.
+    required: false
+runs:
+  using: "node20"
+  main: "dist/index.js"
