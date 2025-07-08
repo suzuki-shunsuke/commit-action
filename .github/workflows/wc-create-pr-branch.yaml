@@ -37,7 +37,7 @@ jobs:
       - run: npm run build
         working-directory: js
 
-      - uses: suzuki-shunsuke/release-js-action@v0.0.1
+      - uses: suzuki-shunsuke/release-js-action@23ab6d1545309c79664bc0e9aea74daf27339193 # v0.1.8-2
         with:
           version: ${{inputs.version}}
           pr: ${{inputs.pr}}

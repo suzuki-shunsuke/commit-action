@@ -3,11 +3,17 @@ name: test
 on: pull_request
 permissions: {}
 jobs:
+  test:
+    uses: ./.github/workflows/workflow_call_test.yaml
+    permissions:
+      contents: write
+      pull-requests: write
   status-check:
     runs-on: ubuntu-24.04
+    if: always() && (contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled'))
+    timeout-minutes: 10
     permissions: {}
-    timeout-minutes: 15
+    needs:
+      - test
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          persist-credentials: false
+      - run: exit 1
