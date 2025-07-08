@@ -9,7 +9,7 @@ export const main = async () => {
     core.setFailed("Branch input is required.");
     return;
   }
-  const repoFullName = core.getInput("repo");
+  const repoFullName = core.getInput("repository");
   let owner = github.context.repo.owner;
   let repo = github.context.repo.repo;
   if (repoFullName) {
