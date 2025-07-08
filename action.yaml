@@ -127,8 +127,8 @@ runs:
       id: commit
       with:
         github_token: ${{ steps.token.outputs.token }}
-        repo: ${{ inputs.repository }}
+        repository: ${{ inputs.repository }}
         branch: ${{ inputs.branch }}
         files: ${{ steps.files.outputs.files }}
-        message: ${{ inputs.commit_message }}
+        commit_message: ${{ inputs.commit_message }}
         parent_branch: ${{ inputs.parent_branch }}
