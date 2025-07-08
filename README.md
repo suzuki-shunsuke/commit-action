@@ -142,5 +142,5 @@ The following values are available:
 
 ## Available versions
 
-As of commit-action v0.0.9, commit-action's main branch and feature branches don't work.
+commit-action's main branch and feature branches don't work.
 [Please see the document](https://github.com/suzuki-shunsuke/release-js-action/blob/main/docs/available_versions.md).
