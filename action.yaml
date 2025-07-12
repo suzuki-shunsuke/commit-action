@@ -123,7 +123,7 @@ runs:
             "${{steps.repo_name.outputs.value}}"
           ]
 
-    - uses: suzuki-shunsuke/commit-action/js@main
+    - uses: suzuki-shunsuke/commit-action/js@d2bb2cec821e01b4e0a33755f6537287e43dc613
       id: commit
       with:
         github_token: ${{ steps.token.outputs.token }}
