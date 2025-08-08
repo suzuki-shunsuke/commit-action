@@ -30,6 +30,10 @@ inputs:
       A Pushed repository.
       By default, GITHUB_REPOSITORY is used.
     required: false
+  root_dir:
+    description: |
+      The Git root directory for the files to commit.
+    required: false
 runs:
   using: "node20"
   main: "dist/index.js"

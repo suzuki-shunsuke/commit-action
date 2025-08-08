@@ -10,6 +10,14 @@ inputs:
       GitHub Access Token
       contents:write - Push commits
     required: false
+  app_id:
+    description: |
+      GitHub App ID
+    required: false
+  app_private_key:
+    description: |
+      GitHub App Private Key
+    required: false
   commit_message:
     description: |
       Commit message
@@ -30,13 +38,9 @@ inputs:
       A Pushed repository.
       By default, GITHUB_REPOSITORY is used.
     required: false
-  app_id:
+  root_dir:
     description: |
-      GitHub App ID
-    required: false
-  app_private_key:
-    description: |
-      GitHub App Private Key
+      The Git root directory for the files to commit.
     required: false
   files:
     description: |
@@ -72,11 +76,11 @@ runs:
     # List changed files
     - shell: bash
       id: files
+      working-directory: ${{ inputs.root_dir }}
       env:
         FILES: ${{ inputs.files }}
         WORKFLOW: ${{ inputs.workflow }}
       run: |
-        echo 'permissions={"contents": "write"}' >> "$GITHUB_OUTPUT"
         if [ -z "$FILES" ]; then
           FILES=$(git ls-files --modified --others --exclude-standard)
           if [ -z "$FILES" ]; then
@@ -91,7 +95,7 @@ runs:
         if [ "$WORKFLOW" = allow ]; then
           if echo "$FILES" | grep -qE '^\.github/workflows/'; then
             echo "::notice:: Grant workflows:write permission" >&2
-            echo 'permissions={"contents": "write", "workflows": "write"}' >> "$GITHUB_OUTPUT"
+            echo 'permission_workflows=write' >> "$GITHUB_OUTPUT"
           fi
         fi
         {
@@ -109,26 +113,23 @@ runs:
       env:
         REPOSITORY: ${{ inputs.repository }}
 
-    - uses: suzuki-shunsuke/github-token-action@350d7506222e3a0016491abe85b5c4dd475b67d1 # v0.2.1
-      if: steps.files.outputs.files != ''
+    - uses: actions/create-github-app-token@df432ceedc7162793a195dd1713ff69aefc7379e # v2.0.6
       id: token
+      if: steps.files.outputs.files && inputs.app_id && inputs.github_token == ''
       with:
-        github_token: ${{inputs.github_token}}
-        github_app_id: ${{inputs.app_id}}
-        github_app_private_key: ${{inputs.app_private_key}}
-        default_github_token: ${{github.token}}
-        github_app_permissions: ${{steps.files.outputs.permissions}}
-        github_app_repositories: >-
-          [
-            "${{steps.repo_name.outputs.value}}"
-          ]
+        app-id: ${{ inputs.app_id }}
+        private-key: ${{ inputs.app_private_key }}
+        repositories: ${{ steps.repo_name.outputs.value }}
+        permission-contents: write
+        permission-workflows: ${{ steps.files.outputs.permission_workflows }}
 
     - uses: suzuki-shunsuke/commit-action/js@main
       id: commit
       with:
-        github_token: ${{ steps.token.outputs.token }}
+        github_token: ${{ inputs.github_token && inputs.github_token || (steps.token.outputs.token && steps.token.outputs.token || github.token) }}
         repository: ${{ inputs.repository }}
         branch: ${{ inputs.branch }}
         files: ${{ steps.files.outputs.files }}
         commit_message: ${{ inputs.commit_message }}
         parent_branch: ${{ inputs.parent_branch }}
+        root_dir: ${{ inputs.root_dir }}

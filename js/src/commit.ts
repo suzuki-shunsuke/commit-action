@@ -2,6 +2,7 @@ import type * as github from "@actions/github";
 import * as core from "@actions/core";
 import type { Octokit } from "@octokit/rest";
 import { readFile, stat } from "fs/promises";
+import * as path from "path";
 
 export interface Logger {
   info(m: string): void;
@@ -12,12 +13,12 @@ export type Options = {
   repo: string;
   branch: string;
   message: string;
+  rootDir: string;
   empty?: boolean; // if true, create an empty commit
   files?: string[];
   baseSHA?: string; // By default, the base branch's latest commit is used
   baseBranch?: string; // By default, if branch exists, it is used as the base branch. Otherwise, the default branch is used
   noParent?: boolean; // if true, do not use parent commit
-  // baseDirectory?: string;
   deletedFiles?: string[]; // files to delete
   deleteIfNotExist?: boolean; // if true, delete files if they don't exist
   forcePush?: boolean; // if true, force push the commit
@@ -190,7 +191,7 @@ const createTreeFile = async (
   filePath: string,
 ): Promise<File> => {
   const file = await getFileContentAndMode(
-    filePath,
+    path.join(opts.rootDir, filePath),
     opts.deleteIfNotExist || false,
   );
   return {
@@ -207,7 +208,7 @@ const createDeletedTreeFile = async (
   filePath: string,
 ): Promise<File> => {
   const file = await getFileContentAndMode(
-    filePath,
+    path.join(opts.rootDir, filePath),
     opts.deleteIfNotExist || false,
   );
   return {
