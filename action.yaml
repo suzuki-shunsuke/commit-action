@@ -38,6 +38,10 @@ inputs:
     description: |
       GitHub App Private Key
     required: false
+  root_dir:
+    description: |
+      The Git root directory for the files to commit.
+    required: false
   files:
     description: |
       Files to commit. Unchanged files are ignored.
@@ -72,6 +76,7 @@ runs:
     # List changed files
     - shell: bash
       id: files
+      working-directory: ${{ inputs.root_dir }}
       env:
         FILES: ${{ inputs.files }}
         WORKFLOW: ${{ inputs.workflow }}
@@ -132,3 +137,4 @@ runs:
         files: ${{ steps.files.outputs.files }}
         commit_message: ${{ inputs.commit_message }}
         parent_branch: ${{ inputs.parent_branch }}
+        root_dir: ${{ inputs.root_dir }}

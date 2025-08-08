@@ -28,6 +28,7 @@ export const main = async () => {
     branch: branch,
     message: core.getInput("commit_message") || "Commit changes",
     files: core.getMultilineInput("files"),
+    rootDir: core.getInput("root_dir"),
     baseBranch: core.getInput("parent_branch"),
     deleteIfNotExist: true,
     logger: {
