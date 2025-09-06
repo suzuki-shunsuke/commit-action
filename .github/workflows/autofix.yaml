@@ -13,7 +13,7 @@ jobs:
           persist-credentials: false
       - run: npm ci
         working-directory: js
-      - uses: aquaproj/aqua-installer@d1fe50798dbadd4eb5b98957290ca175f6b4870f # v4.0.2
+      - uses: aquaproj/aqua-installer@ea518c135a02fc11ff8024364510c181a5c6b342 # v4.0.3
         with:
           aqua_version: v2.53.3
       - run: aqua upc -prune
