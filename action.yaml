@@ -133,7 +133,7 @@ runs:
         permission-contents: write
         permission-workflows: ${{ steps.files.outputs.permission_workflows }}
 
-    - uses: suzuki-shunsuke/commit-action/js@main
+    - uses: suzuki-shunsuke/commit-action/js@e8d47bc4bb4f823129f471e6fec8d04ea5a2c9eb
       id: commit
       with:
         github_token: ${{ inputs.github_token && inputs.github_token || (steps.token.outputs.token && steps.token.outputs.token || github.token) }}
