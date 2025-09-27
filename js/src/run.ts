@@ -5,8 +5,7 @@ import * as commit from "./commit";
 export const main = async () => {
   const defaultBranch = process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF_NAME;
   const branch = core.getInput("branch") || defaultBranch;
-  const failOnSelfPushInput = core.getInput("fail_on_self_push");
-  const failOnSelfPush = (failOnSelfPushInput || "true").toLowerCase() === "true";
+  const failOnSelfPush = core.getBooleanInput("fail_on_self_push");
   if (!branch) {
     core.setFailed("Branch input is required.");
     return;
