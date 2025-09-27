@@ -5,6 +5,7 @@ import * as commit from "./commit";
 export const main = async () => {
   const defaultBranch = process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF_NAME;
   const branch = core.getInput("branch") || defaultBranch;
+  const failOnSelfPush = core.getBooleanInput("fail_on_self_push");
   if (!branch) {
     core.setFailed("Branch input is required.");
     return;
@@ -35,10 +36,17 @@ export const main = async () => {
       info: core.info,
     },
   });
+  const pushed = result?.commit.sha !== undefined && result?.commit.sha !== "";
   core.setOutput("sha", result?.commit.sha || "");
-  core.setOutput("pushed", result?.commit.sha !== undefined && result?.commit.sha !== "");
-  if (`${owner}/${repo}` === `${github.context.repo.owner}/${github.context.repo.repo}` && branch === defaultBranch) {
-    core.setFailed("a commit was pushed");
-    return;
+  core.setOutput("pushed", pushed);
+  const isSameTarget = `${owner}/${repo}` === `${github.context.repo.owner}/${github.context.repo.repo}` && branch === defaultBranch;
+  const selfPush = pushed && isSameTarget;
+  core.setOutput("self_push", selfPush);
+  if (selfPush) {
+    if (failOnSelfPush) {
+      core.setFailed("a commit was pushed");
+      return;
+    }
+    core.notice("a commit was pushed");
   }
 };

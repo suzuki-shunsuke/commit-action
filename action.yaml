@@ -60,6 +60,12 @@ inputs:
       3. ignore - Ignore workflow files
     required: false
     default: allow
+  fail_on_self_push:
+    description: |
+      If true (default), the action fails when it pushes a commit to the same repo/branch as the current workflow run.
+      Set to false to avoid failing and check outputs instead.
+    required: false
+    default: "true"
 outputs:
   pushed:
     description: |
@@ -70,6 +76,10 @@ outputs:
     description: |
       Full length commit SHA to be pushed.
     value: ${{steps.commit.outputs.sha}}
+  self_push:
+    description: |
+      Whether a commit was pushed to the same repository and branch as the current workflow run.
+    value: ${{ steps.commit.outputs.self_push }}
 runs:
   using: composite
   steps:
@@ -133,3 +143,4 @@ runs:
         commit_message: ${{ inputs.commit_message }}
         parent_branch: ${{ inputs.parent_branch }}
         root_dir: ${{ inputs.root_dir }}
+        fail_on_self_push: ${{ inputs.fail_on_self_push }}

@@ -70,6 +70,7 @@ jobs:
 ```
 
 commit-action fails if it pushes a commit to `${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}` in `$GITHUB_REPOSITORY`.
+If you want to continue without failing, set `fail_on_self_push: false` and check outputs instead (see `self_push`).
 If no change is pushed, commit-action does nothing and exits successfully.
 
 ### branch, repository
@@ -121,6 +122,13 @@ And you can also change the commit message.
     files: |
       README.md
       package-lock.json
+    fail_on_self_push: false # continue without failing when self-pushing
+
+### Outputs
+
+- `pushed`: true if a commit was pushed.
+- `sha`: the pushed commit SHA (empty if none).
+- `self_push`: true if a commit was pushed to the same repo/branch as the current workflow run.
 ```
 
 ### Fix workflow files
