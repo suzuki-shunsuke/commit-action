@@ -34,6 +34,12 @@ inputs:
     description: |
       The Git root directory for the files to commit.
     required: false
+  fail_on_self_push:
+    description: |
+      Fail the action when a commit is pushed to the same repository and branch as the current workflow run.
+      Set to 'false' to continue without failing (outputs still indicate the push).
+    required: false
+    default: "true"
 runs:
   using: "node20"
   main: "dist/index.js"
