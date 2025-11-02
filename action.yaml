@@ -129,7 +129,7 @@ runs:
         app_id: ${{ inputs.app_id }}
         app_private_key: ${{ inputs.app_private_key }}
         workflow_changed: ${{ steps.files.outputs.permission_workflows == 'write' }}
-        github_token: ${{ inputs.github_token && inputs.github_token || (steps.token.outputs.token && steps.token.outputs.token || github.token) }}
+        github_token: ${{ inputs.github_token && inputs.github_token || (inputs.app_private_key && '' || github.token) }}
         repository: ${{ inputs.repository }}
         branch: ${{ inputs.branch }}
         files: ${{ steps.files.outputs.files }}
