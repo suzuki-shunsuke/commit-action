@@ -4,11 +4,15 @@ import * as commit from "./commit";
 import * as githubAppToken from "@suzuki-shunsuke/github-app-token";
 
 export const main = async () => {
-  const token = core.getState("token");
-  if (token) {
-    // This is post-cleanup: revoke the token created during main execution
-    return githubAppToken.revoke(token);
+  if (core.getState("post")) {
+    const token = core.getState("token");
+    if (token) {
+      // This is post-cleanup: revoke the token created during main execution
+      return githubAppToken.revoke(token);
+    }
+    return;
   }
+  core.saveState("post", "true");
   // This is main execution: continue with normal processing
   const defaultBranch = process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF_NAME;
   const branch = core.getInput("branch") || defaultBranch;
