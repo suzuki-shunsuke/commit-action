@@ -1,6 +1,18 @@
 name: Release JavaScript actions
 description: Release JavaScript actions
 inputs:
+  app_id:
+    description: |
+      GitHub App ID
+    required: false
+  app_private_key:
+    description: |
+      GitHub App Private Key
+    required: false
+  workflow_changed:
+    description: |
+      Whether workflow files are changed.
+    required: false
   files:
     description: |
       Files to be committed.
@@ -43,3 +55,4 @@ inputs:
 runs:
   using: "node20"
   main: "dist/index.js"
+  post: "dist/index.js"
