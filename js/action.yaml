@@ -9,10 +9,17 @@ inputs:
     description: |
       GitHub App Private Key
     required: false
-  workflow_changed:
+  workflow:
     description: |
-      Whether workflow files are changed.
+      How to handle changed workflow files.
+      This input is used if `app_id` and `app_private_key` are specified.
+      To commit workflow files, the permission `workflows:write` is required.
+      The following values are available:
+      1. allow - Grant `workflows:write` permission when creating an access token
+      2. deny - Fail if workflow files are changed
+      3. ignore - Ignore workflow files
     required: false
+    default: allow
   files:
     description: |
       Files to be committed.

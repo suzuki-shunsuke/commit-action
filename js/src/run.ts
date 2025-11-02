@@ -1,4 +1,5 @@
 import * as core from "@actions/core";
+import * as exec from "@actions/exec";
 import * as github from "@actions/github";
 import * as commit from "./commit";
 import * as githubAppToken from "@suzuki-shunsuke/github-app-token";
@@ -13,6 +14,31 @@ export const main = async () => {
     return;
   }
   core.saveState("post", "true");
+
+  const permissions: githubAppToken.Permissions = {
+    contents: "write",
+  };
+
+  let files = await getFiles();
+  if (files.length === 0) {
+    core.notice("No changes");
+    return;
+  }
+  const workflowOption = core.getInput("workflow");
+  if (workflowOption === "ignore") {
+    core.notice("Ignore workflow files");
+    files = files.filter((f) => !f.startsWith(".github/workflows/"));
+    if (files.length === 0) {
+      core.notice("No changes after ignoring workflow files");
+      return;
+    }
+  } else if (workflowOption === "allow") {
+    if (files.some((f) => f.startsWith(".github/workflows/"))) {
+      core.notice("Grant workflows:write permission");
+      permissions.workflows = "write";
+    }
+  }
+
   // This is main execution: continue with normal processing
   const defaultBranch = process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF_NAME;
   const branch = core.getInput("branch") || defaultBranch;
@@ -40,10 +66,7 @@ export const main = async () => {
       privateKey: core.getInput("app_private_key"),
       owner: owner,
       repositories: [repo],
-      permissions: {
-        contents: "write",
-        workflows: core.getBooleanInput("workflow_changed") ? "write" : undefined,
-      },
+      permissions: permissions,
     });
     core.saveState("token", githubToken);
   }
@@ -74,4 +97,23 @@ export const main = async () => {
     }
     core.notice("a commit was pushed");
   }
+};
+
+const getFiles = async (): Promise<string[]> => {
+  const files = core.getMultilineInput("files");
+  if (files.length > 0) {
+    return files;
+  }
+  const gitLsFilesOutput: string[] = [];
+  const out = await exec.getExecOutput(
+    "git", ["ls-files", "--modified", "--others", "--exclude-standard"], {
+      cwd: core.getInput("root_dir") || undefined,
+    });
+  out.stdout.split("\n").forEach((line) => {
+    const trimmed = line.trim();
+    if (trimmed) {
+      gitLsFilesOutput.push(trimmed);
+    }
+  });
+  return gitLsFilesOutput;
 };
