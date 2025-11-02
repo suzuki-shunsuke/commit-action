@@ -114,15 +114,6 @@ runs:
           echo EOF
         } >> "$GITHUB_OUTPUT"
 
-    - shell: bash
-      id: repo_name
-      if: steps.files.outputs.files != ''
-      run: |
-        repo=${REPOSITORY:-$GITHUB_REPOSITORY}
-        echo "value=${repo#*/}" >> "$GITHUB_OUTPUT"
-      env:
-        REPOSITORY: ${{ inputs.repository }}
-
     - uses: suzuki-shunsuke/commit-action/js@main
       id: commit
       with:
