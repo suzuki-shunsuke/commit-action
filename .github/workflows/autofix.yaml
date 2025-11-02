@@ -12,10 +12,9 @@ jobs:
         with:
           persist-credentials: false
       - run: npm ci
-        working-directory: js
       - uses: aquaproj/aqua-installer@ea518c135a02fc11ff8024364510c181a5c6b342 # v4.0.3
         with:
-          aqua_version: v2.53.3
+          aqua_version: v2.55.1
       - run: aqua upc -prune
         env:
           AQUA_GITHUB_TOKEN: ${{github.token}}

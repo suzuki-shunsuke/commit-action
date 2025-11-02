@@ -66,34 +66,7 @@ inputs:
       Set to false to avoid failing and check outputs instead.
     required: false
     default: "true"
-outputs:
-  pushed:
-    description: |
-      Whether the commit was pushed.
-      If the commit is not pushed, it means that there are no changes to commit.
-    value: ${{ steps.files.outputs.files != '' && steps.commit.outputs.pushed == 'true' }}
-  sha:
-    description: |
-      Full length commit SHA to be pushed.
-    value: ${{steps.commit.outputs.sha}}
-  self_push:
-    description: |
-      Whether a commit was pushed to the same repository and branch as the current workflow run.
-    value: ${{ steps.commit.outputs.self_push }}
 runs:
-  using: composite
-  steps:
-    - uses: suzuki-shunsuke/commit-action/js@main
-      id: commit
-      with:
-        app_id: ${{ inputs.app_id }}
-        app_private_key: ${{ inputs.app_private_key }}
-        workflow: ${{ inputs.workflow }}
-        github_token: ${{ inputs.github_token && inputs.github_token || (inputs.app_private_key == '' && github.token || '') }}
-        repository: ${{ inputs.repository }}
-        branch: ${{ inputs.branch }}
-        files: ${{ steps.files.outputs.files }}
-        commit_message: ${{ inputs.commit_message }}
-        parent_branch: ${{ inputs.parent_branch }}
-        root_dir: ${{ inputs.root_dir }}
-        fail_on_self_push: ${{ inputs.fail_on_self_push }}
+  using: "node20"
+  main: "dist/index.js"
+  post: "dist/index.js"
