@@ -7,7 +7,12 @@ import * as githubAppToken from "@suzuki-shunsuke/github-app-token";
 export const main = async () => {
   if (core.getState("post")) {
     const token = core.getState("token");
+    const expiresAt = core.getState("expires_at");
     if (token) {
+      if (expiresAt && githubAppToken.hasExpired(expiresAt)) {
+        core.info("GitHub App token has already expired");
+        return;
+      }
       // This is post-cleanup: revoke the token created during main execution
       core.info("Revoking GitHub App token");
       return githubAppToken.revoke(token);
@@ -60,21 +65,23 @@ export const main = async () => {
     owner = o;
     repo = r;
   }
-  let githubToken = core.getInput("github_token");
-  if (!githubToken) {
+  let token = core.getInput("github_token");
+  if (!token) {
     core.info(`creating a GitHub App token: ${JSON.stringify({
       owner: owner,
       repositories: [repo],
       permissions: permissions,
     })}`);
-    githubToken = await githubAppToken.create({
+    const appToken = await githubAppToken.create({
       appId: core.getInput("app_id"),
       privateKey: core.getInput("app_private_key"),
       owner: owner,
       repositories: [repo],
       permissions: permissions,
     });
-    core.saveState("token", githubToken);
+    token = appToken.token;
+    core.saveState("token", appToken.token);
+    core.saveState("expires_at", appToken.expiresAt);
   }
   core.info(`creating a commit: ${JSON.stringify({
     owner: owner,
@@ -86,7 +93,7 @@ export const main = async () => {
     baseBranch: core.getInput("parent_branch"),
     deleteIfNotExist: true,
   })}`);
-  const octokit = github.getOctokit(githubToken);
+  const octokit = github.getOctokit(token);
   const result = await commit.createCommit(octokit, {
     owner: owner,
     repo: repo,
