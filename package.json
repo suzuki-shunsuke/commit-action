@@ -2,8 +2,7 @@
   "type": "module",
   "scripts": {
     "build": "ncc build src/index.ts --license LICENSE",
-    "fmt": "prettier --write .",
-    "test": "vitest --run"
+    "fmt": "prettier --write ."
   },
   "dependencies": {
     "@actions/core": "1.11.1",
@@ -16,7 +15,6 @@
     "@types/tmp": "0.2.6",
     "@vercel/ncc": "0.38.4",
     "ts-node": "10.9.2",
-    "typescript": "5.9.3",
-    "vitest": "3.2.4"
+    "typescript": "5.9.3"
   }
 }
