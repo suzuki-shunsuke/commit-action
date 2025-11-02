@@ -62,11 +62,11 @@ export const main = async () => {
   }
   let githubToken = core.getInput("github_token");
   if (!githubToken) {
-    core.info(`creating a GitHub App token: ${{
+    core.info(`creating a GitHub App token: ${JSON.stringify({
       owner: owner,
       repositories: [repo],
       permissions: permissions,
-    }}`);
+    })}`);
     githubToken = await githubAppToken.create({
       appId: core.getInput("app_id"),
       privateKey: core.getInput("app_private_key"),
@@ -76,7 +76,16 @@ export const main = async () => {
     });
     core.saveState("token", githubToken);
   }
-  core.info("creating a commit");
+  core.info(`creating a commit: ${JSON.stringify({
+    owner: owner,
+    repo: repo,
+    branch: branch,
+    message: core.getInput("commit_message") || "Commit changes",
+    files: files,
+    rootDir: core.getInput("root_dir"),
+    baseBranch: core.getInput("parent_branch"),
+    deleteIfNotExist: true,
+  })}`);
   const octokit = github.getOctokit(githubToken);
   const result = await commit.createCommit(octokit, {
     owner: owner,
