@@ -4,10 +4,12 @@ import * as commit from "./commit";
 import * as githubAppToken from "@suzuki-shunsuke/github-app-token";
 
 export const main = async () => {
-  let token = core.getState("token");
-  if (!token) {
-    return githubAppToken.revoke();
+  const token = core.getState("token");
+  if (token) {
+    // This is post-cleanup: revoke the token created during main execution
+    return githubAppToken.revoke(token);
   }
+  // This is main execution: continue with normal processing
   const defaultBranch = process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF_NAME;
   const branch = core.getInput("branch") || defaultBranch;
   const failOnSelfPush = core.getBooleanInput("fail_on_self_push");
@@ -27,21 +29,21 @@ export const main = async () => {
     owner = o;
     repo = r;
   }
-  token = core.getInput("github_token");
-  if (!token) {
-    token = await githubAppToken.create({
+  let githubToken = core.getInput("github_token");
+  if (!githubToken) {
+    githubToken = await githubAppToken.create({
       appId: core.getInput("app_id"),
       privateKey: core.getInput("app_private_key"),
       owner: owner,
       repositories: [repo],
-      permisssions: {
+      permissions: {
         contents: "write",
         workflows: core.getBooleanInput("workflow_changed") ? "write" : undefined,
       },
     });
-    core.saveState("token", token);
+    core.saveState("token", githubToken);
   }
-  const octokit = github.getOctokit(token);
+  const octokit = github.getOctokit(githubToken);
   const result = await commit.createCommit(octokit, {
     owner: owner,
     repo: repo,

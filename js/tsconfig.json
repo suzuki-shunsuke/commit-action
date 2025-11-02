@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
     "target": "es6",
-    "module": "commonjs",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
     "rootDir": "./src",
     "strict": true,
     "noImplicitAny": true,
