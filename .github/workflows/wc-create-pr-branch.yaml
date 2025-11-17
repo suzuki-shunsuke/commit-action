@@ -49,3 +49,11 @@ jobs:
         with:
           branch: test-pr-${{github.event.pull_request.number}}
           files: date.txt
+      - if: github.event_name == 'pull_request' && ! github.event.pull_request.head.repo.fork
+        run: date > date.txt
+      - if: github.event_name == 'pull_request' && ! github.event.pull_request.head.repo.fork
+        uses: ./
+        with:
+          github_token: ${{github.token}}
+          branch: test-pr-${{github.event.pull_request.number}}
+          files: date.txt
