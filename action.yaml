@@ -10,6 +10,13 @@ inputs:
       GitHub Access Token
       contents:write - Push commits
     required: false
+  default_github_token:
+    description: |
+      A default GitHub Access Token.
+      This is used if `github_token` and `app_id`/`app_private_key` are not specified.
+      contents:write - Push commits
+    required: false
+    default: ${{ github.token }}
   app_id:
     description: |
       GitHub App ID

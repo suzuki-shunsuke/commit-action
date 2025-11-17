@@ -65,24 +65,7 @@ export const main = async () => {
     owner = o;
     repo = r;
   }
-  let token = core.getInput("github_token");
-  if (!token) {
-    core.info(`creating a GitHub App token: ${JSON.stringify({
-      owner: owner,
-      repositories: [repo],
-      permissions: permissions,
-    })}`);
-    const appToken = await githubAppToken.create({
-      appId: core.getInput("app_id"),
-      privateKey: core.getInput("app_private_key"),
-      owner: owner,
-      repositories: [repo],
-      permissions: permissions,
-    });
-    token = appToken.token;
-    core.saveState("token", appToken.token);
-    core.saveState("expires_at", appToken.expiresAt);
-  }
+  const token = await getToken(owner, repo, permissions);
   core.info(`creating a commit: ${JSON.stringify({
     owner: owner,
     repo: repo,
@@ -120,6 +103,39 @@ export const main = async () => {
     }
     core.notice("a commit was pushed");
   }
+};
+
+const getToken = async (owner: string, repo: string, permissions: githubAppToken.Permissions): Promise<string> => {
+  const token = core.getInput("github_token");
+  if (token) {
+    return token;
+  }
+  const appId = core.getInput("app_id");
+  const appPrivateKey = core.getInput("app_private_key");
+  if (appId) {
+    if (!appPrivateKey) {
+      throw new Error("app_private_key is required when app_id is provided");
+    }
+    core.info(`creating a GitHub App token: ${JSON.stringify({
+      owner: owner,
+      repositories: [repo],
+      permissions: permissions,
+    })}`);
+    const appToken = await githubAppToken.create({
+      appId: appId,
+      privateKey: appPrivateKey,
+      owner: owner,
+      repositories: [repo],
+      permissions: permissions,
+    });
+    core.saveState("token", appToken.token);
+    core.saveState("expires_at", appToken.expiresAt);
+    return appToken.token;
+  }
+  if (appPrivateKey) {
+    throw new Error("app_id is required when app_private_key is provided");
+  }
+  return core.getInput("default_github_token");
 };
 
 const getFiles = async (): Promise<string[]> => {
