@@ -46,7 +46,8 @@ export const main = async () => {
   }
 
   // This is main execution: continue with normal processing
-  const defaultBranch = process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF_NAME;
+  const defaultBranch =
+    process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF_NAME;
   const branch = core.getInput("branch") || defaultBranch;
   const failOnSelfPush = core.getBooleanInput("fail_on_self_push");
   if (!branch) {
@@ -66,16 +67,18 @@ export const main = async () => {
     repo = r;
   }
   const token = await getToken(owner, repo, permissions);
-  core.info(`creating a commit: ${JSON.stringify({
-    owner: owner,
-    repo: repo,
-    branch: branch,
-    message: core.getInput("commit_message") || "Commit changes",
-    files: files,
-    rootDir: core.getInput("root_dir"),
-    baseBranch: core.getInput("parent_branch"),
-    deleteIfNotExist: true,
-  })}`);
+  core.info(
+    `creating a commit: ${JSON.stringify({
+      owner: owner,
+      repo: repo,
+      branch: branch,
+      message: core.getInput("commit_message") || "Commit changes",
+      files: files,
+      rootDir: core.getInput("root_dir"),
+      baseBranch: core.getInput("parent_branch"),
+      deleteIfNotExist: true,
+    })}`,
+  );
   const octokit = github.getOctokit(token);
   const result = await commit.createCommit(octokit, {
     owner: owner,
@@ -93,7 +96,10 @@ export const main = async () => {
   const pushed = result?.commit.sha !== undefined && result?.commit.sha !== "";
   core.setOutput("sha", result?.commit.sha || "");
   core.setOutput("pushed", pushed);
-  const isSameTarget = `${owner}/${repo}` === `${github.context.repo.owner}/${github.context.repo.repo}` && branch === defaultBranch;
+  const isSameTarget =
+    `${owner}/${repo}` ===
+      `${github.context.repo.owner}/${github.context.repo.repo}` &&
+    branch === defaultBranch;
   const selfPush = pushed && isSameTarget;
   core.setOutput("self_push", selfPush);
   if (selfPush) {
@@ -105,7 +111,11 @@ export const main = async () => {
   }
 };
 
-const getToken = async (owner: string, repo: string, permissions: githubAppToken.Permissions): Promise<string> => {
+const getToken = async (
+  owner: string,
+  repo: string,
+  permissions: githubAppToken.Permissions,
+): Promise<string> => {
   const token = core.getInput("github_token");
   if (token) {
     return token;
@@ -116,11 +126,13 @@ const getToken = async (owner: string, repo: string, permissions: githubAppToken
     if (!appPrivateKey) {
       throw new Error("app_private_key is required when app_id is provided");
     }
-    core.info(`creating a GitHub App token: ${JSON.stringify({
-      owner: owner,
-      repositories: [repo],
-      permissions: permissions,
-    })}`);
+    core.info(
+      `creating a GitHub App token: ${JSON.stringify({
+        owner: owner,
+        repositories: [repo],
+        permissions: permissions,
+      })}`,
+    );
     const appToken = await githubAppToken.create({
       appId: appId,
       privateKey: appPrivateKey,
@@ -145,9 +157,12 @@ const getFiles = async (): Promise<string[]> => {
   }
   const gitLsFilesOutput: string[] = [];
   const out = await exec.getExecOutput(
-    "git", ["ls-files", "--modified", "--others", "--exclude-standard"], {
+    "git",
+    ["ls-files", "--modified", "--others", "--exclude-standard"],
+    {
       cwd: core.getInput("root_dir") || undefined,
-    });
+    },
+  );
   out.stdout.split("\n").forEach((line) => {
     const trimmed = line.trim();
     if (trimmed) {
