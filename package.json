@@ -5,7 +5,7 @@
     "fmt": "prettier --write ."
   },
   "dependencies": {
-    "@actions/core": "2.0.0",
+    "@actions/core": "2.0.1",
     "@actions/github": "6.0.1",
     "@octokit/rest": "^22.0.0",
     "@suzuki-shunsuke/commit-ts": "npm:@jsr/suzuki-shunsuke__commit-ts@^0.1.4",
