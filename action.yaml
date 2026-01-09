@@ -1,9 +1,11 @@
 name: Create Commit By GitHub API
 description: Commit changes by GitHub API
 author: Shunsuke Suzuki
+
 branding:
   icon: git-commit
   color: blue
+
 inputs:
   github_token:
     description: |
@@ -73,6 +75,15 @@ inputs:
       Set to false to avoid failing and check outputs instead.
     required: false
     default: "true"
+
+outputs:
+  sha:
+    description: "Commit SHA"
+  pushed:
+    description: "Commit Pushed"
+  self_push:
+    description: "Pushed Same Target"
+
 runs:
   using: "node20"
   main: "dist/index.js"
