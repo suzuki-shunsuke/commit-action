@@ -58,6 +58,12 @@ inputs:
       By default, all modified and untracked files are committed.
       git ls-files --modified --others --exclude-standard
     required: false
+  list_files_by_git:
+    description: |
+      If true, the action lists files by git ls-files.
+      If false, the action lists files by the files input.
+    required: false
+    default: "true"
   workflow:
     description: |
       How to handle changed workflow files.

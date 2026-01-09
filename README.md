@@ -111,15 +111,19 @@ Then commit-action creates a GitHub App installation access token with minimum `
     app_private_key: ${{secrets.APP_PRIVATE_KEY}}
 ```
 
-### files
+### Which Files To Be Committed
 
-commit-action commits all created, updated, and deleted files by default, but you can also commit only specific files.
-And you can also change the commit message.
+By default, commit-action lists all added, modified, and deleted files by `git ls-files --modified --others --exclude-standard` in `root_dir` (The default is `.`).
+The input `files` is used as arguments of `git ls-files`.
+If the input `list_files_by_git` is set to `false` (the default is `true`), the action uses the input `files` as files to be committed without `git ls-files`.
+The repository needs to be checked out before using commit-action unless `list_files_by_git` is set to `false`.
+The input `files` is a list of relative paths from `root_dir`.
+
+e.g.
 
 ```yaml
 - uses: suzuki-shunsuke/commit-action@87b297f0ce551411b43d1880f4fb3cbc60381055 # v0.0.14
   with:
-    commit_message: "style: format code"
     files: |
       README.md
       package-lock.json
