@@ -59,7 +59,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           persist-credentials: false
 
@@ -67,7 +67,7 @@ jobs:
       # ...
 
       - name: Push changes to the remote branch
-        uses: suzuki-shunsuke/commit-action@cc96d3a3fd959d05e9b79ca395eb30b835aeba24 # v0.0.7
+        uses: suzuki-shunsuke/commit-action@87b297f0ce551411b43d1880f4fb3cbc60381055 # v0.0.14
 ```
 
 commit-action fails if it pushes a commit to `${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}` in `$GITHUB_REPOSITORY`.
@@ -79,7 +79,7 @@ If no change is pushed, commit-action does nothing and exits successfully.
 By default, commit-action pushes a commit to `${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}` in `$GITHUB_REPOSITORY`, but you can change them.
 
 ```yaml
-- uses: suzuki-shunsuke/commit-action@cc96d3a3fd959d05e9b79ca395eb30b835aeba24 # v0.0.7
+- uses: suzuki-shunsuke/commit-action@87b297f0ce551411b43d1880f4fb3cbc60381055 # v0.0.14
   with:
     branch: foo
     repository: suzuki-shunsuke/tfcmt
@@ -91,7 +91,7 @@ If a new branch is created, the parent branch is the default branch by default.
 You can specify the paretn branch.
 
 ```yaml
-- uses: suzuki-shunsuke/commit-action@cc96d3a3fd959d05e9b79ca395eb30b835aeba24 # v0.0.7
+- uses: suzuki-shunsuke/commit-action@87b297f0ce551411b43d1880f4fb3cbc60381055 # v0.0.14
   with:
     branch: foo-2
     parent_branch: foo
@@ -105,7 +105,7 @@ You can create a GitHub App installation access token and pass it to commit-acti
 Then commit-action creates a GitHub App installation access token with minimum `repositories` and `permissions`.
 
 ```yaml
-- uses: suzuki-shunsuke/commit-action@cc96d3a3fd959d05e9b79ca395eb30b835aeba24 # v0.0.7
+- uses: suzuki-shunsuke/commit-action@87b297f0ce551411b43d1880f4fb3cbc60381055 # v0.0.14
   with:
     app_id: ${{secrets.APP_ID}}
     app_private_key: ${{secrets.APP_PRIVATE_KEY}}
@@ -117,20 +117,30 @@ commit-action commits all created, updated, and deleted files by default, but yo
 And you can also change the commit message.
 
 ```yaml
-- uses: suzuki-shunsuke/commit-action@cc96d3a3fd959d05e9b79ca395eb30b835aeba24 # v0.0.7
+- uses: suzuki-shunsuke/commit-action@87b297f0ce551411b43d1880f4fb3cbc60381055 # v0.0.14
   with:
     commit_message: "style: format code"
     files: |
       README.md
       package-lock.json
+```
+
+### fail_on_self_push
+
+[#204](https://github.com/suzuki-shunsuke/commit-action/pull/204) By default, commit-action fails when a commit is pushed to the same repo and branch as the current workflow run.
+When the input `fail_on_self_push` is set to `false` (the default is `true`), the action succeeds in this case.
+
+```yaml
+- uses: suzuki-shunsuke/commit-action@87b297f0ce551411b43d1880f4fb3cbc60381055 # v0.0.14
+  with:
     fail_on_self_push: false # continue without failing when self-pushing
+```
 
 ### Outputs
 
 - `pushed`: true if a commit was pushed.
 - `sha`: the pushed commit SHA (empty if none).
 - `self_push`: true if a commit was pushed to the same repo/branch as the current workflow run.
-```
 
 ### Fix workflow files
 
@@ -144,7 +154,7 @@ The following values are available:
 1. `ignore` - Ignore workflow files
 
 ```yaml
-- uses: suzuki-shunsuke/commit-action@cc96d3a3fd959d05e9b79ca395eb30b835aeba24 # v0.0.7
+- uses: suzuki-shunsuke/commit-action@87b297f0ce551411b43d1880f4fb3cbc60381055 # v0.0.14
   with:
     workflow: ignore # allow (default), deny
 ```
