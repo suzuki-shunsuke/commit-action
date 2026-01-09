@@ -153,17 +153,17 @@ const getToken = async (
 
 const getFiles = async (): Promise<string[]> => {
   const files = core.getMultilineInput("files");
-  if (files.length > 0) {
+  if (!core.getBooleanInput("list_files_by_git")) {
     return files;
   }
-  const gitLsFilesOutput: string[] = [];
   const out = await exec.getExecOutput(
     "git",
-    ["ls-files", "--modified", "--others", "--exclude-standard"],
+    ["ls-files", "--modified", "--others", "--exclude-standard"].concat(files),
     {
       cwd: core.getInput("root_dir") || undefined,
     },
   );
+  const gitLsFilesOutput: string[] = [];
   out.stdout.split("\n").forEach((line) => {
     const trimmed = line.trim();
     if (trimmed) {
