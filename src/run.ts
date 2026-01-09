@@ -140,6 +140,7 @@ const getToken = async (
       repositories: [repo],
       permissions: permissions,
     });
+    core.setSecret(appToken.token);
     core.saveState("token", appToken.token);
     core.saveState("expires_at", appToken.expiresAt);
     return appToken.token;
