@@ -124,13 +124,13 @@ And you can also change the commit message.
       README.md
       package-lock.json
     fail_on_self_push: false # continue without failing when self-pushing
+```
 
 ### Outputs
 
 - `pushed`: true if a commit was pushed.
 - `sha`: the pushed commit SHA (empty if none).
 - `self_push`: true if a commit was pushed to the same repo/branch as the current workflow run.
-```
 
 ### Fix workflow files
 
