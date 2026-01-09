@@ -123,6 +123,16 @@ And you can also change the commit message.
     files: |
       README.md
       package-lock.json
+```
+
+### fail_on_self_push
+
+[#204](https://github.com/suzuki-shunsuke/commit-action/pull/204) By default, commit-action fails when a commit is pushed to the same repo and branch as the current workflow run.
+When the input `fail_on_self_push` is set to `false` (the default is `true`), the action succeeds in this case.
+
+```yaml
+- uses: suzuki-shunsuke/commit-action@cc96d3a3fd959d05e9b79ca395eb30b835aeba24 # v0.0.7
+  with:
     fail_on_self_push: false # continue without failing when self-pushing
 ```
 
