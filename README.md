@@ -67,7 +67,7 @@ jobs:
       # ...
 
       - name: Push changes to the remote branch
-        uses: suzuki-shunsuke/commit-action@87b297f0ce551411b43d1880f4fb3cbc60381055 # v0.0.14
+        uses: suzuki-shunsuke/commit-action@f28421acc277a6d6a9c1f94ea449076ad77dba67 # v0.1.0
 ```
 
 commit-action fails if it pushes a commit to `${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}` in `$GITHUB_REPOSITORY`.
@@ -79,7 +79,7 @@ If no change is pushed, commit-action does nothing and exits successfully.
 By default, commit-action pushes a commit to `${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}` in `$GITHUB_REPOSITORY`, but you can change them.
 
 ```yaml
-- uses: suzuki-shunsuke/commit-action@87b297f0ce551411b43d1880f4fb3cbc60381055 # v0.0.14
+- uses: suzuki-shunsuke/commit-action@f28421acc277a6d6a9c1f94ea449076ad77dba67 # v0.1.0
   with:
     branch: foo
     repository: suzuki-shunsuke/tfcmt
@@ -91,7 +91,7 @@ If a new branch is created, the parent branch is the default branch by default.
 You can specify the paretn branch.
 
 ```yaml
-- uses: suzuki-shunsuke/commit-action@87b297f0ce551411b43d1880f4fb3cbc60381055 # v0.0.14
+- uses: suzuki-shunsuke/commit-action@f28421acc277a6d6a9c1f94ea449076ad77dba67 # v0.1.0
   with:
     branch: foo-2
     parent_branch: foo
@@ -105,7 +105,7 @@ You can create a GitHub App installation access token and pass it to commit-acti
 Then commit-action creates a GitHub App installation access token with minimum `repositories` and `permissions`.
 
 ```yaml
-- uses: suzuki-shunsuke/commit-action@87b297f0ce551411b43d1880f4fb3cbc60381055 # v0.0.14
+- uses: suzuki-shunsuke/commit-action@f28421acc277a6d6a9c1f94ea449076ad77dba67 # v0.1.0
   with:
     app_id: ${{secrets.APP_ID}}
     app_private_key: ${{secrets.APP_PRIVATE_KEY}}
@@ -122,7 +122,7 @@ The input `files` is a list of relative paths from `root_dir`.
 e.g.
 
 ```yaml
-- uses: suzuki-shunsuke/commit-action@87b297f0ce551411b43d1880f4fb3cbc60381055 # v0.0.14
+- uses: suzuki-shunsuke/commit-action@f28421acc277a6d6a9c1f94ea449076ad77dba67 # v0.1.0
   with:
     files: |
       README.md
@@ -135,7 +135,7 @@ e.g.
 When the input `fail_on_self_push` is set to `false` (the default is `true`), the action succeeds in this case.
 
 ```yaml
-- uses: suzuki-shunsuke/commit-action@87b297f0ce551411b43d1880f4fb3cbc60381055 # v0.0.14
+- uses: suzuki-shunsuke/commit-action@f28421acc277a6d6a9c1f94ea449076ad77dba67 # v0.1.0
   with:
     fail_on_self_push: false # continue without failing when self-pushing
 ```
@@ -158,7 +158,7 @@ The following values are available:
 1. `ignore` - Ignore workflow files
 
 ```yaml
-- uses: suzuki-shunsuke/commit-action@87b297f0ce551411b43d1880f4fb3cbc60381055 # v0.0.14
+- uses: suzuki-shunsuke/commit-action@f28421acc277a6d6a9c1f94ea449076ad77dba67 # v0.1.0
   with:
     workflow: ignore # allow (default), deny
 ```
