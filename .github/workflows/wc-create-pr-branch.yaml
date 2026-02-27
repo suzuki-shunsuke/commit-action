@@ -32,6 +32,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{github.token}}
           PR: ${{inputs.pr}}
+      - run: node -v
+      - run: npm -v
       - run: npm ci
       - run: npm run build
 
