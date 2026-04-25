@@ -86,6 +86,11 @@ inputs:
       If true, the action creates an empty commit when no files are changed.
     required: false
     default: "false"
+  force_push:
+    description: |
+      If true, the action pushes a commit forcibly.
+    required: false
+    default: "false"
 
 outputs:
   sha:

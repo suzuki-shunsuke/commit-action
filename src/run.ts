@@ -75,6 +75,7 @@ export const main = async () => {
   const commitMessage =
     core.getInput("commit_message") ||
     (emptyCommit ? "empty commit" : "commit changes");
+  const forcePush = core.getBooleanInput("force_push");
   core.info(
     `creating a commit: ${JSON.stringify({
       owner: owner,
@@ -83,6 +84,7 @@ export const main = async () => {
       message: commitMessage,
       files: files,
       emptyCommit,
+      forcePush,
       rootDir: core.getInput("root_dir"),
       baseBranch: core.getInput("parent_branch"),
       deleteIfNotExist: true,
@@ -96,6 +98,7 @@ export const main = async () => {
     message: commitMessage,
     files: files,
     empty: emptyCommit,
+    forcePush,
     rootDir: core.getInput("root_dir"),
     baseBranch: core.getInput("parent_branch"),
     deleteIfNotExist: true,
