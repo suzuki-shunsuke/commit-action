@@ -29,9 +29,9 @@ inputs:
     required: false
   commit_message:
     description: |
-      Commit message
+      Commit message.
+      If empty, defaults to "empty commit" when empty_commit is true, otherwise "commit changes".
     required: false
-    default: "commit changes"
   branch:
     description: |
       A Pushed branch.
@@ -81,6 +81,11 @@ inputs:
       Set to false to avoid failing and check outputs instead.
     required: false
     default: "true"
+  empty_commit:
+    description: |
+      If true, the action creates an empty commit when no files are changed.
+    required: false
+    default: "false"
 
 outputs:
   sha:

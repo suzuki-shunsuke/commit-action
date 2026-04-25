@@ -25,10 +25,15 @@ export const main = async () => {
     contents: "write",
   };
 
-  let files = await getFiles();
-  if (files.length === 0) {
-    core.notice("No changes");
-    return;
+  const emptyCommit = core.getBooleanInput("empty_commit");
+
+  let files: string[] = [];
+  if (!emptyCommit) {
+    files = await getFiles();
+    if (files.length === 0 && !emptyCommit) {
+      core.notice("No changes");
+      return;
+    }
   }
   const workflowOption = core.getInput("workflow");
   if (workflowOption === "ignore") {
@@ -67,13 +72,17 @@ export const main = async () => {
     repo = r;
   }
   const token = await getToken(owner, repo, permissions);
+  const commitMessage =
+    core.getInput("commit_message") ||
+    (emptyCommit ? "empty commit" : "commit changes");
   core.info(
     `creating a commit: ${JSON.stringify({
       owner: owner,
       repo: repo,
       branch: branch,
-      message: core.getInput("commit_message") || "Commit changes",
+      message: commitMessage,
       files: files,
+      emptyCommit,
       rootDir: core.getInput("root_dir"),
       baseBranch: core.getInput("parent_branch"),
       deleteIfNotExist: true,
@@ -84,8 +93,9 @@ export const main = async () => {
     owner: owner,
     repo: repo,
     branch: branch,
-    message: core.getInput("commit_message") || "Commit changes",
+    message: commitMessage,
     files: files,
+    empty: emptyCommit,
     rootDir: core.getInput("root_dir"),
     baseBranch: core.getInput("parent_branch"),
     deleteIfNotExist: true,
