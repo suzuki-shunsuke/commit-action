@@ -25,10 +25,15 @@ export const main = async () => {
     contents: "write",
   };
 
-  let files = await getFiles();
-  if (files.length === 0) {
-    core.notice("No changes");
-    return;
+  const emptyCommit = core.getBooleanInput("empty_commit");
+
+  let files: string[] = [];
+  if (!emptyCommit) {
+    files = await getFiles();
+    if (files.length === 0 && !emptyCommit) {
+      core.notice("No changes");
+      return;
+    }
   }
   const workflowOption = core.getInput("workflow");
   if (workflowOption === "ignore") {
@@ -74,6 +79,7 @@ export const main = async () => {
       branch: branch,
       message: core.getInput("commit_message") || "Commit changes",
       files: files,
+      emptyCommit,
       rootDir: core.getInput("root_dir"),
       baseBranch: core.getInput("parent_branch"),
       deleteIfNotExist: true,
@@ -86,6 +92,7 @@ export const main = async () => {
     branch: branch,
     message: core.getInput("commit_message") || "Commit changes",
     files: files,
+    empty: emptyCommit,
     rootDir: core.getInput("root_dir"),
     baseBranch: core.getInput("parent_branch"),
     deleteIfNotExist: true,

@@ -81,6 +81,11 @@ inputs:
       Set to false to avoid failing and check outputs instead.
     required: false
     default: "true"
+  empty_commit:
+    description: |
+      If true, the action creates an empty commit when no files are changed.
+    required: false
+    default: "false"
 
 outputs:
   sha:
