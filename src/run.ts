@@ -78,6 +78,8 @@ export const main = async () => {
   const forcePush = core.getBooleanInput("force_push");
   const rootDir = core.getInput("root_dir");
   const baseBranch = core.getInput("parent_branch");
+  const noParent = core.getBooleanInput("orphan");
+  const useBaseTree = core.getBooleanInput("use_base_tree");
   core.info(
     `creating a commit: ${JSON.stringify({
       owner: owner,
@@ -90,6 +92,8 @@ export const main = async () => {
       rootDir,
       baseBranch,
       deleteIfNotExist: true,
+      noParent,
+      useBaseTree,
     })}`,
   );
   const octokit = github.getOctokit(token);
@@ -104,6 +108,8 @@ export const main = async () => {
     rootDir,
     baseBranch,
     deleteIfNotExist: true,
+    noParent,
+    useBaseTree,
     logger: {
       info: core.info,
     },

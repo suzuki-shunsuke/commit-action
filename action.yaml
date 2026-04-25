@@ -91,6 +91,16 @@ inputs:
       If true, the action pushes a commit forcibly.
     required: false
     default: "false"
+  orphan:
+    description: |
+      If true, the action creates an orphan branch.
+    required: false
+    default: "false"
+  use_base_tree:
+    description: |
+      If true, the action uses a base tree.
+    required: false
+    default: "true"
 
 outputs:
   sha:
