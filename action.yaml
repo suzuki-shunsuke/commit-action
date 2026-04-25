@@ -29,9 +29,9 @@ inputs:
     required: false
   commit_message:
     description: |
-      Commit message
+      Commit message.
+      If empty, defaults to "empty commit" when empty_commit is true, otherwise "commit changes".
     required: false
-    default: "commit changes"
   branch:
     description: |
       A Pushed branch.
