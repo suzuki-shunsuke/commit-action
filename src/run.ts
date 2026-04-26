@@ -68,48 +68,27 @@ export const main = async () => {
   const baseBranch = core.getInput("parent_branch");
   const noParent = core.getBooleanInput("orphan");
   const useBaseTree = core.getBooleanInput("use_base_tree");
-  core.info(
-    `creating a commit: ${JSON.stringify({
-      owner: owner,
-      repo: repo,
-      branch: branch,
-      message: commitMessage,
-      files: files,
-      emptyCommit,
-      forcePush,
-      rootDir,
-      baseBranch,
-      deleteIfNotExist: true,
-      noParent,
-      useBaseTree,
-    })}`,
-  );
-  let result: commit.Result | undefined;
-  let appToken: githubAppToken.Token | undefined;
-  try {
-    const got = await getToken(owner, repo, permissions);
-    appToken = got.appToken;
-    const octokit = github.getOctokit(got.token);
-    result = await commit.createCommit(octokit, {
-      owner: owner,
-      repo: repo,
-      branch: branch,
-      message: commitMessage,
-      files: files,
-      empty: emptyCommit,
-      forcePush,
-      rootDir,
-      baseBranch,
-      deleteIfNotExist: true,
-      noParent,
-      useBaseTree,
-      logger: {
-        info: core.info,
-      },
-    });
-  } finally {
-    await revokeToken(appToken);
-  }
+  const param: Omit<commit.Options, "logger"> = {
+    owner: owner,
+    repo: repo,
+    branch: branch,
+    message: commitMessage,
+    files: files,
+    empty: emptyCommit,
+    forcePush,
+    rootDir,
+    baseBranch,
+    deleteIfNotExist: true,
+    noParent,
+    useBaseTree,
+  };
+  core.info(`creating a commit: ${JSON.stringify(param)}`);
+  const result = await createCommit(permissions, {
+    ...param,
+    logger: {
+      info: core.info,
+    },
+  });
   const pushed = result?.commit.sha !== undefined && result?.commit.sha !== "";
   core.setOutput("sha", result?.commit.sha || "");
   core.setOutput("pushed", pushed);
@@ -125,6 +104,21 @@ export const main = async () => {
       return;
     }
     core.notice("a commit was pushed");
+  }
+};
+
+const createCommit = async (
+  permissions: githubAppToken.Permissions,
+  opts: commit.Options,
+): Promise<commit.Result | undefined> => {
+  let appToken: githubAppToken.Token | undefined;
+  try {
+    const got = await getToken(opts.owner, opts.repo, permissions);
+    appToken = got.appToken;
+    const octokit = github.getOctokit(got.token);
+    return await commit.createCommit(octokit, opts);
+  } finally {
+    await revokeToken(appToken);
   }
 };
 
