@@ -4,23 +4,9 @@ import * as github from "@actions/github";
 import * as commit from "@suzuki-shunsuke/commit-ts";
 import * as githubAppToken from "@suzuki-shunsuke/github-app-token";
 
-export const main = async () => {
-  if (core.getState("post")) {
-    const token = core.getState("token");
-    const expiresAt = core.getState("expires_at");
-    if (token) {
-      if (expiresAt && githubAppToken.hasExpired(expiresAt)) {
-        core.info("GitHub App token has already expired");
-        return;
-      }
-      // This is post-cleanup: revoke the token created during main execution
-      core.info("Revoking GitHub App token");
-      return githubAppToken.revoke(token);
-    }
-    return;
-  }
-  core.saveState("post", "true");
+let appToken: githubAppToken.Token | undefined;
 
+export const main = async () => {
   const permissions: githubAppToken.Permissions = {
     contents: "write",
   };
@@ -71,7 +57,6 @@ export const main = async () => {
     owner = o;
     repo = r;
   }
-  const token = await getToken(owner, repo, permissions);
   const commitMessage =
     core.getInput("commit_message") ||
     (emptyCommit ? "empty commit" : "commit changes");
@@ -96,24 +81,30 @@ export const main = async () => {
       useBaseTree,
     })}`,
   );
-  const octokit = github.getOctokit(token);
-  const result = await commit.createCommit(octokit, {
-    owner: owner,
-    repo: repo,
-    branch: branch,
-    message: commitMessage,
-    files: files,
-    empty: emptyCommit,
-    forcePush,
-    rootDir,
-    baseBranch,
-    deleteIfNotExist: true,
-    noParent,
-    useBaseTree,
-    logger: {
-      info: core.info,
-    },
-  });
+  let result: commit.Result | undefined;
+  try {
+    const token = await getToken(owner, repo, permissions);
+    const octokit = github.getOctokit(token);
+    result = await commit.createCommit(octokit, {
+      owner: owner,
+      repo: repo,
+      branch: branch,
+      message: commitMessage,
+      files: files,
+      empty: emptyCommit,
+      forcePush,
+      rootDir,
+      baseBranch,
+      deleteIfNotExist: true,
+      noParent,
+      useBaseTree,
+      logger: {
+        info: core.info,
+      },
+    });
+  } finally {
+    await revokeToken(appToken);
+  }
   const pushed = result?.commit.sha !== undefined && result?.commit.sha !== "";
   core.setOutput("sha", result?.commit.sha || "");
   core.setOutput("pushed", pushed);
@@ -129,6 +120,24 @@ export const main = async () => {
       return;
     }
     core.notice("a commit was pushed");
+  }
+};
+
+const revokeToken = async (appToken: githubAppToken.Token | undefined) => {
+  if (!appToken) {
+    return;
+  }
+  if (appToken.expiresAt && githubAppToken.hasExpired(appToken.expiresAt)) {
+    core.info("GitHub App token has already expired");
+    return;
+  }
+  core.info("Revoking GitHub App token");
+  try {
+    await githubAppToken.revoke(appToken.token);
+  } catch (e) {
+    core.warning(
+      `failed to revoke GitHub App token: ${e instanceof Error ? e.message : String(e)}`,
+    );
   }
 };
 
@@ -154,7 +163,7 @@ const getToken = async (
         permissions: permissions,
       })}`,
     );
-    const appToken = await githubAppToken.create({
+    appToken = await githubAppToken.create({
       appId: appId,
       privateKey: appPrivateKey,
       owner: owner,
@@ -162,8 +171,6 @@ const getToken = async (
       permissions: permissions,
     });
     core.setSecret(appToken.token);
-    core.saveState("token", appToken.token);
-    core.saveState("expires_at", appToken.expiresAt);
     return appToken.token;
   }
   if (appPrivateKey) {
