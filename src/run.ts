@@ -4,7 +4,10 @@ import * as github from "@actions/github";
 import * as commit from "@suzuki-shunsuke/commit-ts";
 import * as githubAppToken from "@suzuki-shunsuke/github-app-token";
 
-let appToken: githubAppToken.Token | undefined;
+type GetTokenResult = {
+  token: string;
+  appToken?: githubAppToken.Token;
+};
 
 export const main = async () => {
   const permissions: githubAppToken.Permissions = {
@@ -82,9 +85,11 @@ export const main = async () => {
     })}`,
   );
   let result: commit.Result | undefined;
+  let appToken: githubAppToken.Token | undefined;
   try {
-    const token = await getToken(owner, repo, permissions);
-    const octokit = github.getOctokit(token);
+    const got = await getToken(owner, repo, permissions);
+    appToken = got.appToken;
+    const octokit = github.getOctokit(got.token);
     result = await commit.createCommit(octokit, {
       owner: owner,
       repo: repo,
@@ -145,10 +150,10 @@ const getToken = async (
   owner: string,
   repo: string,
   permissions: githubAppToken.Permissions,
-): Promise<string> => {
+): Promise<GetTokenResult> => {
   const token = core.getInput("github_token");
   if (token) {
-    return token;
+    return { token };
   }
   const appId = core.getInput("app_id");
   const appPrivateKey = core.getInput("app_private_key");
@@ -163,7 +168,7 @@ const getToken = async (
         permissions: permissions,
       })}`,
     );
-    appToken = await githubAppToken.create({
+    const appToken = await githubAppToken.create({
       appId: appId,
       privateKey: appPrivateKey,
       owner: owner,
@@ -171,12 +176,12 @@ const getToken = async (
       permissions: permissions,
     });
     core.setSecret(appToken.token);
-    return appToken.token;
+    return { token: appToken.token, appToken };
   }
   if (appPrivateKey) {
     throw new Error("app_id is required when app_private_key is provided");
   }
-  return core.getInput("default_github_token");
+  return { token: core.getInput("default_github_token") };
 };
 
 const getFiles = async (): Promise<string[]> => {
