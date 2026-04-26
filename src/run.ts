@@ -4,23 +4,12 @@ import * as github from "@actions/github";
 import * as commit from "@suzuki-shunsuke/commit-ts";
 import * as githubAppToken from "@suzuki-shunsuke/github-app-token";
 
-export const main = async () => {
-  if (core.getState("post")) {
-    const token = core.getState("token");
-    const expiresAt = core.getState("expires_at");
-    if (token) {
-      if (expiresAt && githubAppToken.hasExpired(expiresAt)) {
-        core.info("GitHub App token has already expired");
-        return;
-      }
-      // This is post-cleanup: revoke the token created during main execution
-      core.info("Revoking GitHub App token");
-      return githubAppToken.revoke(token);
-    }
-    return;
-  }
-  core.saveState("post", "true");
+type GetTokenResult = {
+  token: string;
+  appToken?: githubAppToken.Token;
+};
 
+export const main = async () => {
   const permissions: githubAppToken.Permissions = {
     contents: "write",
   };
@@ -71,7 +60,6 @@ export const main = async () => {
     owner = o;
     repo = r;
   }
-  const token = await getToken(owner, repo, permissions);
   const commitMessage =
     core.getInput("commit_message") ||
     (emptyCommit ? "empty commit" : "commit changes");
@@ -80,24 +68,7 @@ export const main = async () => {
   const baseBranch = core.getInput("parent_branch");
   const noParent = core.getBooleanInput("orphan");
   const useBaseTree = core.getBooleanInput("use_base_tree");
-  core.info(
-    `creating a commit: ${JSON.stringify({
-      owner: owner,
-      repo: repo,
-      branch: branch,
-      message: commitMessage,
-      files: files,
-      emptyCommit,
-      forcePush,
-      rootDir,
-      baseBranch,
-      deleteIfNotExist: true,
-      noParent,
-      useBaseTree,
-    })}`,
-  );
-  const octokit = github.getOctokit(token);
-  const result = await commit.createCommit(octokit, {
+  const param: Omit<commit.Options, "logger"> = {
     owner: owner,
     repo: repo,
     branch: branch,
@@ -110,6 +81,10 @@ export const main = async () => {
     deleteIfNotExist: true,
     noParent,
     useBaseTree,
+  };
+  core.info(`creating a commit: ${JSON.stringify(param)}`);
+  const result = await createCommit(permissions, {
+    ...param,
     logger: {
       info: core.info,
     },
@@ -132,14 +107,47 @@ export const main = async () => {
   }
 };
 
+const createCommit = async (
+  permissions: githubAppToken.Permissions,
+  opts: commit.Options,
+): Promise<commit.Result | undefined> => {
+  let appToken: githubAppToken.Token | undefined;
+  try {
+    const got = await getToken(opts.owner, opts.repo, permissions);
+    appToken = got.appToken;
+    const octokit = github.getOctokit(got.token);
+    return await commit.createCommit(octokit, opts);
+  } finally {
+    await revokeToken(appToken);
+  }
+};
+
+const revokeToken = async (appToken: githubAppToken.Token | undefined) => {
+  if (!appToken) {
+    return;
+  }
+  if (appToken.expiresAt && githubAppToken.hasExpired(appToken.expiresAt)) {
+    core.info("GitHub App token has already expired");
+    return;
+  }
+  core.info("Revoking GitHub App token");
+  try {
+    await githubAppToken.revoke(appToken.token);
+  } catch (e) {
+    core.warning(
+      `failed to revoke GitHub App token: ${e instanceof Error ? e.message : String(e)}`,
+    );
+  }
+};
+
 const getToken = async (
   owner: string,
   repo: string,
   permissions: githubAppToken.Permissions,
-): Promise<string> => {
+): Promise<GetTokenResult> => {
   const token = core.getInput("github_token");
   if (token) {
-    return token;
+    return { token };
   }
   const appId = core.getInput("app_id");
   const appPrivateKey = core.getInput("app_private_key");
@@ -162,14 +170,12 @@ const getToken = async (
       permissions: permissions,
     });
     core.setSecret(appToken.token);
-    core.saveState("token", appToken.token);
-    core.saveState("expires_at", appToken.expiresAt);
-    return appToken.token;
+    return { token: appToken.token, appToken };
   }
   if (appPrivateKey) {
     throw new Error("app_id is required when app_private_key is provided");
   }
-  return core.getInput("default_github_token");
+  return { token: core.getInput("default_github_token") };
 };
 
 const getFiles = async (): Promise<string[]> => {
