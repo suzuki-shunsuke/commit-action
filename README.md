@@ -191,7 +191,7 @@ permissions:
   contents: read
 
 steps:
-  - uses: suzuki-shunsuke/commit-action@v0
+  - uses: suzuki-shunsuke/commit-action@06e3b49d4706498d325d29bd85adc82ecf2f5d8f # v1.0.0
     with:
       client_id: ${{vars.APP_CLIENT_ID}}
       aws_kms_key_id: ${{vars.KMS_KEY_ID}}
