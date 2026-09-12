@@ -15,7 +15,7 @@
     "@suzuki-shunsuke/github-app-token": "npm:@jsr/suzuki-shunsuke__github-app-token@^0.2.1"
   },
   "devDependencies": {
-    "@types/node": "24.13.3",
+    "@types/node": "24.13.4",
     "@types/tmp": "0.2.6",
     "@vercel/ncc": "0.45.0",
     "prettier": "3.9.6",
