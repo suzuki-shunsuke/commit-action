@@ -167,3 +167,39 @@ The following values are available:
 
 commit-action's main branch and feature branches don't work.
 [Please see the document](https://github.com/suzuki-shunsuke/release-js-action/blob/main/docs/available_versions.md).
+
+## Private keys in AWS KMS
+
+A GitHub App private key in GitHub Secrets never expires, so anyone who obtains
+it can generate installation access tokens indefinitely. Importing the key into
+AWS KMS removes that path: the key can never be exported, and only the JSON Web
+Token signing is delegated to it.
+
+Set `aws_kms_key_id` instead of `app_private_key`. Passing it as a key ARN is
+enough, since an ARN carries its region; for an alias or a bare key id, set
+`aws_region`, or set `AWS_REGION`.
+
+Set `aws_role_to_assume` and this action assumes the IAM role itself with the
+GitHub OIDC token. The AWS credentials then stay inside the action and are never
+exported, so later steps of the job can't see them. Leaving it unset uses the
+credentials `aws-actions/configure-aws-credentials` exports as
+`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` and `AWS_SESSION_TOKEN`, so that
+action works as well. Those environment variables are the only other source: a
+profile in `~/.aws/credentials`, IMDS on a self-hosted EC2 runner and the
+credentials of an ECS or EKS task are not read.
+
+```yaml
+permissions:
+  id-token: write # Required to assume the AWS IAM role via OIDC
+  contents: read
+
+steps:
+  - uses: suzuki-shunsuke/commit-action@06e3b49d4706498d325d29bd85adc82ecf2f5d8f # v1.0.0
+    with:
+      client_id: ${{vars.APP_CLIENT_ID}}
+      aws_kms_key_id: ${{vars.KMS_KEY_ID}}
+      aws_role_to_assume: ${{vars.ROLE_TO_ASSUME}}
+```
+
+The app can be identified by either `client_id` or `app_id`. `client_id` takes
+precedence when both are set.

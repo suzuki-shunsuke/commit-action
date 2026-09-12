@@ -3,6 +3,7 @@ import * as exec from "@actions/exec";
 import * as github from "@actions/github";
 import * as commit from "@suzuki-shunsuke/commit-ts";
 import * as githubAppToken from "@suzuki-shunsuke/github-app-token";
+import { newAppOctokit } from "./app_octokit";
 
 type GetTokenResult = {
   token: string;
@@ -149,12 +150,8 @@ const getToken = async (
   if (token) {
     return { token };
   }
-  const appId = core.getInput("app_id");
-  const appPrivateKey = core.getInput("app_private_key");
+  const appId = core.getInput("client_id") || core.getInput("app_id");
   if (appId) {
-    if (!appPrivateKey) {
-      throw new Error("app_private_key is required when app_id is provided");
-    }
     core.info(
       `creating a GitHub App token: ${JSON.stringify({
         owner: owner,
@@ -163,8 +160,7 @@ const getToken = async (
       })}`,
     );
     const appToken = await githubAppToken.create({
-      appId: appId,
-      privateKey: appPrivateKey,
+      octokit: newAppOctokit(),
       owner: owner,
       repositories: [repo],
       permissions: permissions,
@@ -172,8 +168,10 @@ const getToken = async (
     core.setSecret(appToken.token);
     return { token: appToken.token, appToken };
   }
-  if (appPrivateKey) {
-    throw new Error("app_id is required when app_private_key is provided");
+  if (core.getInput("app_private_key") || core.getInput("aws_kms_key_id")) {
+    throw new Error(
+      "client_id or app_id is required when app_private_key or aws_kms_key_id is provided",
+    );
   }
   return { token: core.getInput("default_github_token") };
 };
