@@ -1,12 +1,25 @@
 import * as core from "@actions/core";
-import { KMSClient } from "@aws-sdk/client-kms";
 import { createAppAuth } from "@octokit/auth-app";
 import { Octokit } from "@octokit/rest";
 import { credentials } from "@suzuki-shunsuke/actions-aws-oidc";
-import { createJwt } from "@suzuki-shunsuke/github-app-jwt-aws-kms";
+import {
+  createJwt,
+  type CredentialsProvider,
+  regionFromKeyId,
+} from "@suzuki-shunsuke/github-app-jwt-aws-kms";
 
 /**
- * Builds a KMS client.
+ * Works out the AWS region of the KMS key.
+ *
+ * A key ARN carries its region, so aws_region is only needed for an alias name
+ * or a bare key id. The same region is used for the STS endpoint, so that a job
+ * doesn't have to name it twice.
+ */
+const awsRegion = (keyId: string): string | undefined =>
+  core.getInput("aws_region") || regionFromKeyId(keyId) || undefined;
+
+/**
+ * Builds the AWS credentials used to call the KMS Sign API.
  *
  * When aws_role_to_assume is set, the IAM role is assumed here with the GitHub
  * OIDC token, and the resulting credentials never leave this process. Later
@@ -14,20 +27,19 @@ import { createJwt } from "@suzuki-shunsuke/github-app-jwt-aws-kms";
  * aws-actions/configure-aws-credentials exports as environment variables or
  * writes to ~/.aws/credentials.
  *
- * Undefined leaves the client to @suzuki-shunsuke/github-app-jwt-aws-kms, which
- * builds one from the key ARN's region and the standard AWS credential chain,
- * so aws-actions/configure-aws-credentials works as well.
+ * Undefined leaves them to @suzuki-shunsuke/github-app-jwt-aws-kms, which reads
+ * AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY and AWS_SESSION_TOKEN, so
+ * aws-actions/configure-aws-credentials works as well.
  */
-const newKMSClient = (): KMSClient | undefined => {
+const newCredentials = (
+  region: string | undefined,
+): CredentialsProvider | undefined => {
   const roleArn = core.getInput("aws_role_to_assume");
   if (!roleArn) {
     return undefined;
   }
   core.info(`assuming an AWS IAM role with the GitHub OIDC token: ${roleArn}`);
-  return new KMSClient({
-    region: core.getInput("aws_region") || undefined,
-    credentials: credentials({ roleArn }),
-  });
+  return credentials({ roleArn, region });
 };
 
 /**
@@ -48,14 +60,15 @@ export const newAppOctokit = (): Octokit => {
   const kmsKeyId = core.getInput("aws_kms_key_id");
   if (kmsKeyId) {
     core.info(`signing GitHub App JSON Web Tokens with AWS KMS: ${kmsKeyId}`);
+    const region = awsRegion(kmsKeyId);
     return new Octokit({
       authStrategy: createAppAuth,
       auth: {
         appId,
         createJwt: createJwt({
           keyId: kmsKeyId,
-          region: core.getInput("aws_region") || undefined,
-          client: newKMSClient(),
+          region,
+          credentials: newCredentials(region),
         }),
       },
     });
