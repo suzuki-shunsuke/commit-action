@@ -1,16 +1,21 @@
 ---
 name: build
-on: workflow_call
+on:
+  workflow_call:
+    secrets:
+      TAKUMI_GUARD_BOT_ID:
+        required: true
 
 jobs:
   build:
     # Verify the action builds. create-pr-branch also builds, but it is gated on
     # the pull request author because it needs write permissions to publish, so
     # Renovate pull requests never exercise the build. This job has no
-    # permissions and runs for every pull request.
+    # permissions other than id-token: write and runs for every pull request.
     timeout-minutes: 10
     runs-on: ubuntu-26.04
-    permissions: {}
+    permissions:
+      id-token: write # Required for OIDC
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -19,5 +24,8 @@ jobs:
         with:
           node-version-file: .node-version
           cache: npm
+      - uses: flatt-security/setup-takumi-guard-npm@14f07d0cbc739b42a1b7c70a04c2b84cd1318ddd # v1.4.0
+        with:
+          bot-id: ${{secrets.TAKUMI_GUARD_BOT_ID}}
       - run: npm ci
       - run: npm run build

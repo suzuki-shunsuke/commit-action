@@ -1,11 +1,18 @@
 ---
 name: test (workflow_call)
-on: workflow_call
+on:
+  workflow_call:
+    secrets:
+      TAKUMI_GUARD_BOT_ID:
+        required: true
 permissions: {}
 jobs:
   build:
     uses: ./.github/workflows/wc-build.yaml
-    permissions: {}
+    permissions:
+      id-token: write
+    secrets:
+      TAKUMI_GUARD_BOT_ID: ${{secrets.TAKUMI_GUARD_BOT_ID}}
 
   create-pr-branch:
     uses: ./.github/workflows/wc-create-pr-branch.yaml
