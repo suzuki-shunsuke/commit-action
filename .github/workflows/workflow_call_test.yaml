@@ -7,19 +7,14 @@ on:
         required: true
 permissions: {}
 jobs:
-  build:
-    uses: ./.github/workflows/wc-build.yaml
-    permissions:
-      id-token: write
-    secrets:
-      TAKUMI_GUARD_BOT_ID: ${{secrets.TAKUMI_GUARD_BOT_ID}}
-
   create-pr-branch:
     uses: ./.github/workflows/wc-create-pr-branch.yaml
-    if: github.event.pull_request.user.login == 'suzuki-shunsuke'
+    secrets:
+      TAKUMI_GUARD_BOT_ID: ${{secrets.TAKUMI_GUARD_BOT_ID}}
     permissions:
       contents: write
       pull-requests: write
+      id-token: write
     with:
       version: pr/${{github.event.pull_request.number}}
       pr: ${{github.event.pull_request.number}}
