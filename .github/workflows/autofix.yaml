@@ -17,10 +17,8 @@ jobs:
       - run: aqua upc -prune
         env:
           AQUA_GITHUB_TOKEN: ${{github.token}}
-      # Install only prettier instead of all packages
-      - run: npm ci
-        working-directory: .github/prettier
-      - run: .github/prettier/node_modules/.bin/prettier --write .
+      # npm run fmt installs only prettier in .github/prettier, so npm ci at the root isn't needed
+      - run: npm run fmt
       - run: pinact run -u README.md
         if: ${{ !github.event.pull_request.head.repo.fork }}
         env:
